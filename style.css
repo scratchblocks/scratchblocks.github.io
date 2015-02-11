@@ -151,11 +151,6 @@ button:active, button.pressed, .button:active, .button.pressed {
     max-width: none;
   }
 
-  h1 span {
-    display: block;
-    margin-top: 0.75em;
-  }
-
   #preview, #side {
     position: absolute;
     bottom: 2em; left: 2em; right: 2em;

@@ -256,6 +256,10 @@ button:active, button.pressed, .button:active, .button.pressed {
   padding: 1em;
 }
 
+#header {
+  top: 0;
+}
+
 
 /* Column */
 

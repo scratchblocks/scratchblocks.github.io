@@ -49,6 +49,10 @@ h1 span a {
   margin-right: 0.5em;
 }
 
+a#title {
+  background: none;
+}
+
 a {
   color: black;
   text-decoration: none;

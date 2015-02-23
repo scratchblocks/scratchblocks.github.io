@@ -1,6 +1,6 @@
 /*
  * scratchblocks2 generator
- * http://blob8108.github.io/scratchblocks2/generator/
+ * http://scratchblocks.github.io/generator/
  *
  * Copyright 2013, Tim Radvan
  * @license MIT

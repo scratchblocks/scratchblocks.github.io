@@ -3,7 +3,7 @@
 <title>generator :: scratchblocks</title>
 
 <!--
-http://blob8108.github.io/scratchblocks2/generator/
+http://scratchblocks.github.io/generator/
 
 Copyright 2013, Tim Radvan
 @license MIT
@@ -259,7 +259,7 @@ function chosen_scripts_updated () {
   $("#num-chosen-scripts").text(chosen_scripts.length);
   if (chosen_scripts.length) {
     var code = export_code();
-    var url = "http://blob8108.github.io/scratchblocks2/#";
+    var url = "http://scratchblocks.github.io/#";
     url += encodeURIComponent(code);
     $("#export").attr("href", url);
     $("#export").removeClass("disabled");

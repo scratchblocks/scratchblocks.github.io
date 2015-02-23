@@ -176,7 +176,20 @@ button:active, button.pressed, .button:active, .button.pressed {
   }
 }
 
-/* editor: future */
+@media screen and (max-width: 32em) {
+  h1 span {
+    display: block;
+    margin: 1rem 0;
+  }
+
+  select {
+    margin: 1rem 0;
+  }
+}
+
+
+
+/* editor: to be used in future */
 
 .cm-s-number { color: #4548af; }
 .cm-s-string, .cm-s-menu { color: #904949; }

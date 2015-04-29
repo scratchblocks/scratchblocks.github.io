@@ -76,20 +76,13 @@ function asset_url (md5) {
 }
 
 function id_from_url (url) {
-  url = url.replace("http://beta.", "http://");
-  if (!/http:\/\//.test(url)) {
-    url = "http://" + url;
-  }
-  if (/http:\/\/scratch.mit.edu\/projects\/[0-9]+(\/(#editor|#player)?)?/
-      .test(url)) {
-    return url.substr(32).replace("/", "")
-      .replace(/#editor|#player/, "");
-  }
+  if (url.indexOf("#") !== -1) url = url.slice(0, url.indexOf("#"));
+  var id = (url + " ").split(/[^0-9]+/)[1];
+  return id;
 }
 
 function fetch (id) {
-  $("#project-url").attr("value",
-    "http://scratch.mit.edu/projects/"+id);
+  $("#project-url").attr("value", "http://scratch.mit.edu/projects/"+id);
   current_id = id;
 
   var fetch_url = "http://projects.scratch.mit.edu/internalapi/project/" + id + "/get/";
@@ -339,6 +332,14 @@ function update_edit_link() {
 $(document).ready(function () {
   $("#fetch").click(function (e) {
     init_fetch();
+  });
+
+  var input = document.getElementById('project-url');
+  input.addEventListener('input', function(e) {
+    console.log(input.value);
+    var id = id_from_url(input.value);
+    input.value = "http://scratch.mit.edu/projects/" + id;
+    console.log(id);
   });
 
   $("#project-url").keypress(function (e) {

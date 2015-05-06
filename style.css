@@ -463,3 +463,8 @@ button:active, button.pressed, .button:active, .button.pressed {
 
 
 
+img .hidden {
+  position: absolute;
+  opacity: 0;
+}
+

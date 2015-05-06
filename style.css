@@ -14,6 +14,9 @@ body {
   padding: 1em;
   margin: 0 auto;
   max-width: 60em;
+
+  background: white;
+  color: black;
 }
 
 body, .CodeMirror {
@@ -165,7 +168,7 @@ button:active, button.pressed, .button:active, .button.pressed {
   position: relative;
   overflow: hidden;
   margin: 1em 0;
-  border: 1px solid #ccc;
+  border: 1px solid #bbb;
   max-width: 40em;
   height: 16em;
 
@@ -176,6 +179,10 @@ button:active, button.pressed, .button:active, .button.pressed {
   letter-spacing: +0.5px;
   line-height: 1.5em;
   font-size: 1em;
+}
+
+.CodeMirror .CodeMirror-placeholder {
+  color: #aaa;
 }
 
 .CodeMirror-linenumber {

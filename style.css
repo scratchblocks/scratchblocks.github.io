@@ -42,10 +42,6 @@ h1 {
   font-size: 1.5em;
 }
 
-h1 a {
-  margin-right: 0.5em;
-}
-
 h1 span {
   font-weight: 400;
   font-size: 1.125rem;
@@ -62,6 +58,7 @@ h1 span a b {
 
 a#title {
   background: none;
+  margin-right: 0.5em;
 }
 
 a {

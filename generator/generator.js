@@ -455,7 +455,7 @@ var gen = function () {
                 break;
         }
 
-        out = out.replace("@greenFlag", "green flag");
+        out = out.replace("@greenFlag", "flag");
         out = out.replace("@turnLeft", "cw");
         out = out.replace("@turnRight", "ccw");
         out = out.replace("_myself_", "myself");

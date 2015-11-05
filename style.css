@@ -42,21 +42,24 @@ h1 {
   font-size: 1.5em;
 }
 
-h1 span {
+h1 > span {
   font-weight: 400;
   font-size: 1.125rem;
   letter-spacing: 0;
 }
-
-h1 span a {
+h1 > span a {
   margin-right: 0.5em;
 }
-
-h1 span a b {
+h1 > span a b {
   font-weight: 600;
 }
 
-a#title {
+.author {
+  font-size: 0.825rem;
+  font-weight: 400;
+}
+
+#title a {
   background: none;
   margin-right: 0.5em;
 }
@@ -203,7 +206,7 @@ button:active, button.pressed, .button:active, .button.pressed {
   h1 {
     position: relative;
   }
-  h1 span {
+  h1 > span {
     display: block;
     position: absolute;
     top: 0;
@@ -237,11 +240,11 @@ button:active, button.pressed, .button:active, .button.pressed {
 }
 
 @media screen and (max-width: 32em) {
-  h1 span {
+  h1 > span {
     display: block;
     margin: 1.5rem 0 1rem;
   }
-  h1 span a {
+  h1 > span a {
     padding: 0.25em 0.5em;
   }
 
@@ -361,6 +364,7 @@ button:active, button.pressed, .button:active, .button.pressed {
   font-weight: 100;
   color: rgba(0, 0, 0, 0.75);
   width: 24em;
+  margin: 1em 0;
 }
 #fetch {
   margin: 0;

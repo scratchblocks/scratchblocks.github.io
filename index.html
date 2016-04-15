@@ -153,10 +153,26 @@ var codeMirror = CodeMirror(editor, {
 });
 codeMirror.setCursor(codeMirror.getValue().length);
 
-codeMirror.on("change", function() {
+// Debounces a function, pulled out of Underscore.js
+function debounce(func, wait, immediate) {
+  var timeout, result;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) result = func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) result = func.apply(context, args);
+    return result;
+  };
+};
+codeMirror.on("change", debounce(function() {
   obj.script = codeMirror.getValue();
   objUpdated();
-});
+}, 500, false));
 
 var onResize = function() {
   codeMirror.setSize(editor.clientWidth, editor.clientHeight)
@@ -238,7 +254,6 @@ function objUpdated() {
       location.hash = '#';
     }
   }
-  // TODO: don't spam history on every keypress!
 
   // render code
   var scripts = scratchblocks.parse(obj.script, {

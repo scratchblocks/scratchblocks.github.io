@@ -172,7 +172,7 @@ function debounce(func, wait, immediate) {
 codeMirror.on("change", debounce(function() {
   obj.script = codeMirror.getValue();
   objUpdated();
-}, 500, false));
+}, 250, false));
 
 var onResize = function() {
   codeMirror.setSize(editor.clientWidth, editor.clientHeight)

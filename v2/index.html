@@ -7,18 +7,19 @@
 
 <link rel=stylesheet href="//fonts.googleapis.com/css?family=Noto+Sans:400,700">
 <link rel=stylesheet href="/lib/codemirror-custom.css">
+<link rel=stylesheet href="/scratchblocks2.css">
 <link rel=stylesheet href="/style.css">
 
 <!---------------------------------------------------------------------------->
 
 <h1>
   <div id=title>
-    <a href="/">scratchblocks</a>
+    <a href="/">scratchblocks css-v2</a>
     <span class=author>by <a href="//tjvr.org">blob8108</a></span>
   </div>
   <span>
     <a target="_blank" href="http://wiki.scratch.mit.edu/wiki/Block_Plugin/Syntax">help</a>
-    <a href="http://github.com/tjvr/scratchblocks">github</a>
+    <a href="//github.com/tjvr/scratchblocks/tree/css-v2">github</a>
     <a href="/generator/"><b>generate</b></a>
   </span>
 </h1>
@@ -120,15 +121,18 @@
 
 <pre id="preview" class="blocks"></pre>
 
+<img class=hidden src="/block_images/flag.png">
+<img class=hidden src="/block_images/arrows.png">
+
 <!---------------------------------------------------------------------------->
 
-<script src="scratchblocks-min.js"></script>
-<script src="translations-all-min.js" charset="utf8"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="/scratchblocks2.js"></script>
+<script src="/translations-all.js" charset="utf8"></script>
 <script src=/lib/codemirror-compressed.js></script>
 
 <script>
 var editor = document.getElementById('editor');
-var exportLink;
 
 var obj = {};
 extractHash();
@@ -241,24 +245,15 @@ function objUpdated() {
   // TODO: don't spam history on every keypress!
 
   // render code
-  var scripts = scratchblocks.parse(obj.script, {
-    languages: obj.lang ? ['en', obj.lang] : ['en'],
-  });
-  scratchblocks.render(scripts, function(svg) {
-    preview.innerHTML = "";
-    preview.appendChild(svg);
+  var preview = document.getElementById('preview');
+  preview.innerHTML = "";
+  var textNode = document.createTextNode(obj.script);
+  preview.appendChild(textNode);
 
-    // add export link
-    setTimeout(function() {
-      if (exportLink) document.body.removeChild(exportLink);
-      exportLink = document.createElement('a');
-      exportLink.href = 'data:image/svg+xml;utf8,' + scratchblocks.exportSVG(svg);
-      exportLink.setAttribute('download', 'scratchblocks.svg');
-      exportLink.textContent = "Export SVG";
-      exportLink.className = 'export-link';
-      document.body.appendChild(exportLink);
-    }, 0);
-  });
+  scratchblocks2.reset_languages();
+  var langDict = scratchblocks2._translations[obj.lang];
+  if (langDict) scratchblocks2.load_language(langDict);
+  scratchblocks2.parse("pre.blocks");
 
   // update language dropdown
   var isIncomplete = incompleteLangs.indexOf(obj.lang) > -1;

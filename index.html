@@ -242,16 +242,23 @@ function decodeHash() {
   }
 }
 
+function setHash(hash) {
+  if (history && history.replaceState) {
+    history.replaceState({}, "", hash);
+  } else {
+    location.hash = hash;
+  }
+}
+
 function objUpdated() {
   // set hash
   if (obj.lang) {
-    location.hash = ('#?lang=' + encodeURIComponent(obj.lang) +
-                     '&script='+encodeURIComponent(obj.script));
+    setHash('#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(obj.script));
   } else if (obj.script) {
-    location.hash = '#'+encodeURIComponent(obj.script);
+    setHash('#'+encodeURIComponent(obj.script));
   } else {
     if (!(location.hash == '' || location.hash == '#')) {
-      location.hash = '#';
+      setHash('#');
     }
   }
 

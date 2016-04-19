@@ -196,6 +196,13 @@ button:active, button.pressed, .button:active, .button.pressed {
   margin-bottom: 20px;
 }
 
+.export-link {
+  display: inline-block;
+  margin-left: 2px;
+  margin-top: 2em;
+  margin-right: 1em;
+}
+
 
 @media screen and (min-width: 62em) {
   body {
@@ -236,6 +243,12 @@ button:active, button.pressed, .button:active, .button.pressed {
     top: 8em;
     right: 55%;
     overflow-y: scroll;
+  }
+
+  .export-link {
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0.5em;
   }
 }
 

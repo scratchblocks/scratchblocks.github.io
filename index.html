@@ -281,7 +281,10 @@ function objUpdated() {
       link.className = 'export-link';
       document.body.appendChild(link);
 
-      if (exportPNGLink) document.body.removeChild(exportPNGLink);
+      if (exportPNGLink) {
+        document.body.removeChild(exportPNGLink);
+        exportPNGLink = null;
+      }
       doc.exportPNG(function(pngDataURL) {
         var link = exportPNGLink = document.createElement('a');
         link.href = pngDataURL;

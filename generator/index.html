@@ -7,13 +7,12 @@
 <!--
 http://scratchblocks.github.io/generator/
 
-Copyright 2013, Tim Radvan
+Copyright 2013-2016, Tim Radvan
 @license MIT
 http://opensource.org/licenses/MIT
 -->
 
 <link rel=stylesheet href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700">
-<link rel="stylesheet" href="../scratchblocks2.css">
 <link rel="stylesheet" href="../style.css">
 
 <!---------------------------------------------------------------------------->
@@ -62,7 +61,7 @@ http://opensource.org/licenses/MIT
 <!---------------------------------------------------------------------------->
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
-<script src="../scratchblocks2.js"></script>
+<script src="/js/scratchblocks-v3.1-pre-min.js"></script>
 <script src="generator.js"></script>
 
 <script>
@@ -200,20 +199,26 @@ function show_sprite (i) {
     $("#scripts-list").append("<p>No scripts.</p>")
   } else {
     var highest_script_id = 1;
-    var scripts = sprite.scripts;
 
     /* sort by y position */
-    scripts = scripts.sort(function (a, b) {
+    sprite.scripts = sprite.scripts.sort(function (a, b) {
       return a[1] - b[1];
     });
 
-    $.each(scripts, function (i, script) {
-      var code = gen.generate(script);
+    var doc = scratchblocks.fromJSON(sprite);
 
-      $script_wrap = $("<div class=script-wrap>");
+    doc.scripts.forEach(function(script) {
+      var code = script.stringify();
+      console.log(code);
+
+      var $script_wrap = $("<div class=script-wrap>");
       $("#scripts-list").append($script_wrap);
 
-      $script_wrap.append($("<pre class=blocks>").text(code));
+      var scriptDoc = new scratchblocks.Document([script]);
+      scriptDoc.render(function(svg) {
+        $script_wrap[0].style.height = scriptDoc.height + 'px';
+        $script_wrap.append(svg);
+      });
 
       var id = "script-"+ highest_script_id;
       var checkbox = $("<input type=checkbox id="+id+">");
@@ -243,8 +248,6 @@ function show_sprite (i) {
       highest_script_id += 1;
     });
   }
-
-  scratchblocks2.parse();
 
   // DEBUG
   window.sprite = sprite;

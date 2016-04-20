@@ -77,8 +77,10 @@ function asset_url (md5) {
 }
 
 function id_from_url (url) {
-  if (url.indexOf("#") !== -1) url = url.slice(0, url.indexOf("#"));
-  var id = (url + " ").split(/[^0-9]+/)[1];
+  if(url.indexOf("phosphorus") <= url.indexOf("scratch")) {
+    if (url.indexOf("#") > url.indexOf("scratch")) url = url.slice(0, url.indexOf("#"));
+  }
+  var id = $.grep((url + " ").split(/[^0-9]+/), function (a) { return a !== ""}).slice(-1)[0];
   return id;
 }
 
@@ -343,7 +345,15 @@ $(document).ready(function () {
   input.addEventListener('input', function(e) {
     console.log(input.value);
     var id = id_from_url(input.value);
-    input.value = "http://scratch.mit.edu/projects/" + id;
+    if(id) {
+      if(input.value.indexOf("phosphorus") > input.value.indexOf("scratch")) {
+        input.value = "http://phosphorus.github.io/#" + id;
+      } else {
+        input.value = "http://scratch.mit.edu/projects/" + id;
+      }
+    } else {
+      input.value = "http://scratch.mit.edu/projects/";
+    }
     console.log(id);
   });
 

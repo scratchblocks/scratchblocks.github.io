@@ -77,8 +77,8 @@ function asset_url (md5) {
 }
 
 function id_from_url (url) {
-  if (url.indexOf("#") !== -1) url = url.slice(0, url.indexOf("#"));
-  var id = (url + " ").split(/[^0-9]+/)[1];
+  url = url.replace(/-[0-9]+/g, ''); // Remove numbers in comment anchors
+  var id = url.match(/[0-9]+(?![\s\S]*[0-9]+)/); // Find the last number in the url
   return id;
 }
 
@@ -343,7 +343,7 @@ $(document).ready(function () {
   input.addEventListener('input', function(e) {
     console.log(input.value);
     var id = id_from_url(input.value);
-    input.value = "http://scratch.mit.edu/projects/" + id;
+    input.value = "http://scratch.mit.edu/projects/" + (id || '');
     console.log(id);
   });
 

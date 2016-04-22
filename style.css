@@ -164,7 +164,7 @@ button:active, button.pressed, .button:active, .button.pressed {
 }
 
 
-#editor {
+#editor, #in-editor, #out-editor {
   position: relative;
   overflow: hidden;
   margin: 1em 0;
@@ -174,8 +174,14 @@ button:active, button.pressed, .button:active, .button.pressed {
 
   color: rgba(0, 0, 0, 0.9);
 }
+#out-editor {
+  width: 100%;
+  padding: 4px;
+  overflow: auto;
+}
 
-.CodeMirror {
+
+.CodeMirror, #out-editor {
   letter-spacing: +0.5px;
   line-height: 1.5em;
   font-size: 1em;
@@ -221,7 +227,7 @@ button:active, button.pressed, .button:active, .button.pressed {
     margin-left: 2rem;
   }
 
-  #preview, #side {
+  #left, #preview, #side {
     position: absolute;
     bottom: 2em; left: 2em; right: 2em;
   }
@@ -243,6 +249,10 @@ button:active, button.pressed, .button:active, .button.pressed {
     top: 8em;
     right: 55%;
     overflow-y: scroll;
+  }
+  #left {
+    top: 6.25em;
+    right: 55%;
   }
 
   .export-link {

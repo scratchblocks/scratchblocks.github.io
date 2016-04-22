@@ -12,22 +12,19 @@
 <!---------------------------------------------------------------------------->
 
 <h1>
-  <div id=title>
-    <a href="/">scratchblocks</a>
-    <span class=author>v3.1 • by <a href="//tjvr.org">blob8108</a></span>
-  </div>
-  <span>
-    <a target="_blank" href="http://wiki.scratch.mit.edu/wiki/Block_Plugin/Syntax">help</a>
-    <a href="http://github.com/tjvr/scratchblocks">github</a>
-    <a href="/generator/"><b>generate</b></a>
-    <a href="/translator/"><b>translate</b></a>
-  </span>
+  <a href="/" class=link>scratchblocks</a> translator
 </h1>
 
-<div id="side">
+<div id=left>
+  <div id="in-editor"></div>
+  <div id="in-preview"></div>
+</div>
+
+<div id="side" class=right>
 <div>
   <select id="choose-lang">
     <option value="">Select language…
+    <option value="en">English
     <option value="de"> Deutsch (German)
     <option value="es"> Español (Spanish)
     <option value="fr"> Français (French)
@@ -116,10 +113,9 @@
 
 </div>
 
-<div id="editor"></div>
+<textarea id="out-editor" placeholder="Select a language"></textarea>
+<pre id="out-preview"></pre>
 </div>
-
-<pre id="preview" class="blocks"></pre>
 
 <!---------------------------------------------------------------------------->
 
@@ -128,7 +124,11 @@
 <script src=/lib/codemirror-compressed.js></script>
 
 <script>
-var editor = document.getElementById('editor');
+var inPreview = document.getElementById('in-preview');
+var outPreview = document.getElementById('out-preview');
+var outEditor = document.getElementById('out-editor');
+
+var editor = document.getElementById('in-editor');
 var exportSVGLink;
 var exportPNGLink;
 
@@ -266,36 +266,24 @@ function objUpdated() {
 
   // render code
   var doc = window.doc = scratchblocks.parse(obj.script, {
-    languages: obj.lang ? ['en', obj.lang] : ['en'],
+    languages: Object.keys(scratchblocks.allLanguages),
   });
   doc.render(function(svg) {
-    preview.innerHTML = "";
-    preview.appendChild(svg);
+    inPreview.innerHTML = "";
+    inPreview.appendChild(svg);
 
-    // add export link
-    setTimeout(function() {
-      if (exportSVGLink) document.body.removeChild(exportSVGLink);
-      var link = exportSVGLink = document.createElement('a');
-      link.href = doc.exportSVG();
-      link.setAttribute('download', 'scratchblocks.svg');
-      link.textContent = "Export SVG";
-      link.className = 'export-link';
-      document.body.appendChild(link);
+    if (scratchblocks.allLanguages.hasOwnProperty(obj.lang)) {
+      doc.translate(scratchblocks.allLanguages[obj.lang]);
+      doc.render(function(svg) {
+        outPreview.innerHTML = "";
+        outPreview.appendChild(svg);
 
-      if (exportPNGLink) {
-        document.body.removeChild(exportPNGLink);
-        exportPNGLink = null;
-      }
-      doc.exportPNG(function(pngDataURL) {
-        var link = exportPNGLink = document.createElement('a');
-        link.href = pngDataURL;
-        link.setAttribute('download', 'scratchblocks.png');
-        link.textContent = "Export PNG";
-        link.className = 'export-link';
-        document.body.appendChild(link);
+        outEditor.value = doc.stringify();
       });
-    }, 0);
-
+    } else {
+      outPreview.innerHTML = "";
+      outEditor.value = "";
+    }
   });
 
   // update language dropdown

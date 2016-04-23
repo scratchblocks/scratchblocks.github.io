@@ -374,7 +374,7 @@ button:active, button.pressed, .button:active, .button.pressed {
 /* Header stuff */
 
 #header {
-  height: 9.5em;
+  height: 11em;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   z-index: 202;
@@ -407,7 +407,7 @@ button:active, button.pressed, .button:active, .button.pressed {
 
 
 #wrap {
-  top: 9.5em;
+  top: 11em;
   bottom: 0;
 }
 

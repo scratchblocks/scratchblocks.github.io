@@ -12,7 +12,7 @@ Copyright 2013-2016, Tim Radvan
 http://opensource.org/licenses/MIT
 -->
 
-<link rel=stylesheet href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700">
+<link rel=stylesheet href="//fonts.googleapis.com/css?family=Noto+Sans:400,700">
 <link rel="stylesheet" href="../style.css">
 
 <!---------------------------------------------------------------------------->
@@ -160,7 +160,7 @@ var current_id,
   lang;
 
 function asset_url (md5) {
-  return "http://cdn.scratch.mit.edu/internalapi/asset/" + md5 + "/get/";
+  return "//cdn.scratch.mit.edu/internalapi/asset/" + md5 + "/get/";
 }
 
 function id_from_url (url) {
@@ -173,7 +173,7 @@ function fetch (id) {
   $("#project-url").attr("value", "http://scratch.mit.edu/projects/"+id);
   current_id = id;
 
-  var fetch_url = "http://projects.scratch.mit.edu/internalapi/project/" + id + "/get/";
+  var fetch_url = "//projects.scratch.mit.edu/internalapi/project/" + id + "/get/";
 
   clear_project();
 

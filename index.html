@@ -121,6 +121,9 @@
 
 <pre id="preview" class="blocks"></pre>
 
+<a id="export-svg" class="export-link" download="scratchblocks.svg">Export SVG</a>
+<a id="export-png" class="export-link" download="scratchblocks.png">Export PNG</a>
+
 <!---------------------------------------------------------------------------->
 
 <script src="/js/scratchblocks-v3.1-min.js"></script>
@@ -129,8 +132,8 @@
 
 <script>
 var editor = document.getElementById('editor');
-var exportSVGLink;
-var exportPNGLink;
+var exportSVGLink = document.getElementById('export-svg');
+var exportPNGLink = document.getElementById('export-png');
 
 var obj = {};
 extractHash();
@@ -272,27 +275,15 @@ function objUpdated() {
     preview.innerHTML = "";
     preview.appendChild(svg);
 
+    exportSVGLink.href = "";
+    exportPNGLink.href = "";
+
     // add export link
     setTimeout(function() {
-      if (exportSVGLink) document.body.removeChild(exportSVGLink);
-      var link = exportSVGLink = document.createElement('a');
-      link.href = doc.exportSVG();
-      link.setAttribute('download', 'scratchblocks.svg');
-      link.textContent = "Export SVG";
-      link.className = 'export-link';
-      document.body.appendChild(link);
+      exportSVGLink.href = doc.exportSVG();
 
-      if (exportPNGLink) {
-        document.body.removeChild(exportPNGLink);
-        exportPNGLink = null;
-      }
       doc.exportPNG(function(pngDataURL) {
-        var link = exportPNGLink = document.createElement('a');
-        link.href = pngDataURL;
-        link.setAttribute('download', 'scratchblocks.png');
-        link.textContent = "Export PNG";
-        link.className = 'export-link';
-        document.body.appendChild(link);
+        exportPNGLink.href = pngDataURL;
       });
     }, 0);
 

@@ -12,7 +12,7 @@
 <!---------------------------------------------------------------------------->
 
 <h1>
-  <a href="/" class=link>scratchblocks</a> translator
+  <a href="/" class=link id=home-link>scratchblocks</a> translator
 </h1>
 
 <div id=left>
@@ -278,7 +278,11 @@ function objUpdated() {
         outPreview.innerHTML = "";
         outPreview.appendChild(svg);
 
-        outEditor.value = doc.stringify();
+        var translated = doc.stringify();
+        outEditor.value = translated;
+
+        // fix home link
+        document.getElementById('home-link').href = "/" + '#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(translated);
       });
     } else {
       outPreview.innerHTML = "";

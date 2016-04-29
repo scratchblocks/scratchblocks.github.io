@@ -253,9 +253,6 @@ function setHash(hash) {
   } else {
     location.hash = hash;
   }
-
-  // fix translate link
-  document.getElementById('translate-link').href = "/translator/" + hash;
 }
 
 function objUpdated() {
@@ -291,6 +288,9 @@ function objUpdated() {
     }, 0);
 
   });
+
+  // fix translate link
+  document.getElementById('translate-link').href = "/translator/" + '#'+encodeURIComponent(obj.script);
 
   // update language dropdown
   var isIncomplete = incompleteLangs.indexOf(obj.lang) > -1;

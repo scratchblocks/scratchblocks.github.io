@@ -287,6 +287,9 @@ function objUpdated() {
     } else {
       outPreview.innerHTML = "";
       outEditor.value = "";
+
+      // fix home link
+      document.getElementById('home-link').href = "/" + location.hash;
     }
   });
 

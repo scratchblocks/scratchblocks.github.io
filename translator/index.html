@@ -13,6 +13,10 @@
 
 <h1>
   <a href="/" class=link id=home-link>scratchblocks</a> translator
+  <span>
+    <a id="swap-btn">swap ↔</a>
+    <a id="home-link-2">done ↑</a>
+  </span>
 </h1>
 
 <div id=left>
@@ -129,8 +133,7 @@ var outPreview = document.getElementById('out-preview');
 var outEditor = document.getElementById('out-editor');
 
 var editor = document.getElementById('in-editor');
-var exportSVGLink;
-var exportPNGLink;
+var swapBtn = document.getElementById('swap-btn');
 
 var obj = {};
 extractHash();
@@ -252,6 +255,13 @@ function setHash(hash) {
   }
 }
 
+function setHomeLink(lang, script) {
+  var hash = lang ? '#?lang=' + encodeURIComponent(lang) + '&script='+encodeURIComponent(script)
+                  : '#'+encodeURIComponent(script);
+  document.getElementById('home-link').href = "/" + hash;
+  document.getElementById('home-link-2').href = "/" + hash;
+}
+
 function objUpdated() {
   // set hash
   if (obj.lang) {
@@ -268,6 +278,7 @@ function objUpdated() {
   var doc = window.doc = scratchblocks.parse(obj.script, {
     languages: Object.keys(scratchblocks.allLanguages),
   });
+  var fromLang = mainLanguage(doc);
   doc.render(function(svg) {
     inPreview.innerHTML = "";
     inPreview.appendChild(svg);
@@ -281,15 +292,17 @@ function objUpdated() {
         var translated = doc.stringify();
         outEditor.value = translated;
 
-        // fix home link
-        document.getElementById('home-link').href = "/" + '#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(translated);
+        // fix links
+        swapBtn.href = '#?lang=' + encodeURIComponent(fromLang) + '&script='+encodeURIComponent(translated);
+        setHomeLink(obj.lang, translated);
       });
     } else {
       outPreview.innerHTML = "";
       outEditor.value = "";
 
-      // fix home link
-      document.getElementById('home-link').href = "/" + location.hash;
+      // fix links
+      swapBtn.href = "";
+      setHomeLink(fromLang, location.hash);
     }
   });
 
@@ -304,6 +317,36 @@ function objUpdated() {
       ""
   );
   langStatus.textContent = displayText;
+}
+
+function mainLanguage(doc) {
+  var counts = {};
+
+  doc.scripts.forEach(function(script) {
+    script.blocks.forEach(recurse);
+  });
+
+  function recurse(block) {
+    if (block.info.language) {
+      var code = block.info.language.code;
+      if (!counts.hasOwnProperty(code)) counts[code] = 0;
+      counts[code]++;
+    }
+    block.children.forEach(function(child) {
+      if (child.isBlock) recurse(child);
+    });
+  }
+
+  var max = 0;
+  var maxCode;
+  Object.keys(counts).forEach(function(code) {
+    var score = counts[code];
+    if (score > max || (score === max && maxCode === 'en')) {
+      maxCode = code;
+      max = score;
+    }
+  });
+  return maxCode;
 }
 
 setInterval(function() {

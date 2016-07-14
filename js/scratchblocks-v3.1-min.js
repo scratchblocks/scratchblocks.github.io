@@ -1711,10 +1711,11 @@ var scratchblocks = function () {
       c: 'color',
     }[part[1]];
 
-    var value = value ? ""+value : "";
     if (shape === 'color') {
-      if (!value) value = parseInt(Math.random() * 256 * 256 * 256);
-      if (value < 0) value = 0xFFFFFFFF + value + 1;
+      // a number is expected here
+      value = parseInt(value);
+      if (typeof(value) == "undefined" ) value = parseInt(Math.random() * 256 * 256 * 256);
+      if (value < 0) value = 0xFFFFFFFF + parseInt(value) + 1;
       var hex = value.toString(16);
       hex = hex.slice(Math.max(0, hex.length - 6)); // last 6 characters
       while (hex.length < 6) hex = '0' + hex;
@@ -1722,6 +1723,8 @@ var scratchblocks = function () {
         hex = hex[0] + hex[2] + hex[4];
       }
       value = '#' + hex;
+    } else if (shape === 'number') {
+      value = parseInt(value);
     } else if (shape === 'dropdown') {
       value = {
         _mouse_: "mouse-pointer",
@@ -1730,15 +1733,14 @@ var scratchblocks = function () {
         _edge_: "edge",
         _random_: "random position",
       }[value] || value;
-    } else if (shape === 'number') {
-      value = value || "0";
-    }
-    if (shape === 'dropdown' || shape === 'number-dropdown') {
       var menu = value;
-      value = lang.dropdowns[value] || value;
+      value = lang.dropdowns[value] || value ;
+    } else if (shape === 'number-dropdown') {
+      var menu = value;
+      value = lang.dropdowns[value] || value ;
     }
 
-    return new Input(shape, value, menu);
+    return new Input(shape, value.toString(), menu);
   };
 
   Input.prototype.toJSON = function() {

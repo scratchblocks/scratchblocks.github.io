@@ -10,27 +10,31 @@ function el(tagName, className, textContent, children) {
   return el;
 }
 
-function makeSection(big, text) {
+function makeSection(title, small) {
   var triangle = el('span', 'disclosure-triangle', '▼');
-  var heading = el(big ? 'h2' : 'h3', null, null, [
+  var heading = el(small ? 'h3' : 'h2', null, null, [
     triangle,
-    document.createTextNode(text),
+    document.createTextNode(title),
   ]);
   var section = el('closeable');
   heading.addEventListener('click', function() {
     triangle.classList.toggle('closed');
     section.classList.toggle('closed');
   });
-  if (!big) {
-    var content = el('content');
-    section.appendChild(content);
-  }
   return {
     heading: heading,
     triangle: triangle,
     section: section,
-    content: content || section,
+    //content: section,
   };
+}
+
+function makeSubSection(title) {
+  var s = makeSection(title, true)
+  var content = el('content');
+  s.section.appendChild(content);
+  s.content = s.section
+  return s
 }
 
 var compareButton = document.getElementById('compare-button');
@@ -277,26 +281,58 @@ function fetchBoth(cb) {
 };
 
 function compare(left, right, assets) {
-  var result = [];
+  var out = []
 
-  function getSprites(project) {
-    var sprites = {};
-    sprites['Stage'] = project;
-    project.children.forEach(function(child) {
-      if (child.objName && child.scripts) {
-        sprites[child.objName] = child;
-      }
-    });
-    return sprites;
-  }
-  var leftSprites = getSprites(left);
-  var rightSprites = getSprites(right);
+  // Use scratch-diff to, um, do the diff.
+  var diff = scratch_diff(left, right)
 
-  var spriteNames = Object.keys(leftSprites);
-  Object.keys(rightSprites).forEach(function(name) {
-    if (spriteNames.indexOf(name) === -1) spriteNames.push(name);
-  });
+  diff.forEach(sprite => {
+    let [op, info] = sprite
 
+    // TODO scratch-diff: Stage has no name
+    // TODO scratch-diff: handle rename
+    var s = makeSection((info && info.name) || '<no name>');
+    let section
+    out.push(s.heading)
+    out.push(section = s.section)
+
+    if (op === ' ') {
+      s.heading.removeChild(s.triangle);
+      return
+    }
+
+    if (op !== '~') {
+      var insert = op === '+'
+      s.heading.classList.add(insert ? 'insert' : 'delete')
+      //section.appendChild(el('p', 'content', insert ? '(new sprite)' : '(sprite deleted)'))
+      s.heading.removeChild(s.triangle);
+      return
+    }
+
+    if (info.costumes) {
+      var b = renderCostumes(info.costumes, assets)
+      section.appendChild(b.heading)
+      section.appendChild(b.section)
+    }
+
+    if (info.sounds) {
+      /* TODO
+      var b = renderSounds(info.sounds, assets)
+      section.appendChild(b.heading)
+      section.appendChild(b.section)
+      */
+    }
+
+    if (info.scripts) {
+      var b = renderScripts(info.scripts)
+      section.appendChild(b.heading);
+      section.appendChild(b.section);
+    }
+
+    console.log(info)
+  })
+
+  /*
   spriteNames.forEach(function(name) {
     var s = makeSection(true, name);
     var section = s.section;
@@ -313,24 +349,6 @@ function compare(left, right, assets) {
       s.heading.classList.add('delete');
     } 
 
-    var costumes = compareMedia('costumes', leftObj, rightObj, assets);
-    if (costumes) {
-      var b = makeSection(false, 'Costumes');
-      b.content.appendChild(costumes);
-      s.content.appendChild(b.heading);
-      s.content.appendChild(b.section);
-      different = true;
-    }
-
-    var sounds = compareMedia('sounds', leftObj, rightObj, assets);
-    if (sounds) {
-      var b = makeSection(false, 'Sounds');
-      b.content.appendChild(sounds);
-      s.content.appendChild(b.heading);
-      s.content.appendChild(b.section);
-      different = true;
-    }
-
     var blocks = compareScripts(leftObj, rightObj);
     if (blocks) {
       var b = makeSection(false, 'Scripts');
@@ -344,8 +362,71 @@ function compare(left, right, assets) {
       s.heading.removeChild(s.triangle);
     }
   });
+  */
 
-  return result;
+  return out;
+}
+
+function renderCostumes(diff, assets) {
+  return renderMedia({
+    title: 'Costumes',
+    kind: 'costumes',
+    diff: diff,
+    render(info) {
+      var icon = el('img', null)
+      console.log(info)
+      icon.src = URL.createObjectURL(assets[info.md5])
+      return icon
+    },
+  })
+}
+
+/*
+function renderSounds
+      var icon = el('audio', 'play-button', '▶');
+      // TODO play sound?!
+      icon.addEventListener('click', function(event) {
+        console.log(assets[media.md5]);
+      });
+*/
+
+function renderMedia(props) {
+  var b = makeSubSection(props.title)
+  var result = el('div', props.kind)
+  b.content.appendChild(result)
+
+  function append(op, info) {
+    var icon = props.render(info)
+
+    var link = el('a', null);
+    link.href = assetURL(info.md5)
+    link.appendChild(icon);
+
+    result.appendChild(el('div', op + ' media', null, [
+      link,
+      el('div', 'name', info.name),
+    ]));
+  }
+
+  function skip() {
+    result.appendChild(el('div', 'media unchanged', null))
+  }
+
+  props.diff.forEach(media => {
+    let [op, info] = media
+    if (op === '~') {
+      // TODO group ~'s
+      //append('delete', info.__old)
+      //append('insert', info.__new)
+    } else if (op === ' ') {
+      // TODO render unchanged images?
+      skip()
+    } else {
+      append(op === '+' ? 'insert' : 'delete', info)
+    }
+  })
+
+  return b
 }
 
 function compareMedia(kind, leftChild, rightChild, assets) {
@@ -395,104 +476,13 @@ function compareMedia(kind, leftChild, rightChild, assets) {
   //if (result.children) return result;
 }
 
-function diff(left, right) {
-  var sm = new difflib.SequenceMatcher(left, right);
+function renderScripts(diff) {
+  var b = makeSubSection('Scripts')
+  var result = el('div', 'scripts')
+  b.content.appendChild(result)
+
   // TODO
 
-  var ops = [];
-  sm.get_opcodes().forEach(function(opcode) {
-    var type = opcode[0],
-        lStart = opcode[1],
-        lEnd = opcode[2],
-        rStart = opcode[3],
-        rEnd = opcode[4];
-    switch (type) {
-      case 'replace':
-        ops.push({
-          type: 'delete',
-          range: left.slice(lStart, lEnd),
-        });
-        ops.push({
-          type: 'insert',
-          range: right.slice(rStart, rEnd),
-        });
-        break;
-      case 'delete':
-        ops.push({
-          type: type,
-          range: left.slice(lStart, lEnd),
-        });
-        break;
-      case 'insert':
-      case 'equal':
-        ops.push({
-          type: type,
-          range: right.slice(rStart, rEnd),
-        });
-        break;
-    }
-  });
-
-  return ops;
+  return b
 }
-
-function compareScripts(leftChild, rightChild) {
-
-  var left = (leftChild.scripts || []).map(function(array) { return array[2]; });
-  var right = (rightChild.scripts || []).map(function(array) { return array[2]; });
-
-  //return diffScripts(left, right);
-}
-
-function diffScripts(left, right) {
-  var pairs = [];
-  for (var i=0; i<left.length; i++) {
-    var a = left[i];
-    for (var j=0; j<right.length; j++) {
-      var b = right[j];
-      var result = diffSeq(a, b);
-      pairs.append({
-        score: result.score, 
-        left: a,
-        right: b,
-        result: reuslt,
-      });
-    }
-  }
-
-  // sort lowest score first
-  pairs.sort(function(a, b) {
-    return a.score - b.score;
-  });
-
-  var out = [];
-  var left = left.slice();
-  var right = right.slice();
-  for (var i=0; i<pairs.length; i++) {
-    var pair = pairs[i];
-    if (left.indexOf(pair.left) === -1) continue;
-    if (right.indexOf(pair.right) === -1) continue;
-    left.splice(left.indexOf(pair.left), 1);
-    right.splice(right.indexOf(pair.right), 1);
-    out.push(pair.result);
-  }
-  return out;
-}
-
-function diffSeq(left, right) {
-  var matrix = [];
-  var lastRow = [];
-  for (var i=0; i<left.length; i++) {
-    for (var j=0; j<left.length; j++) {
-    }
-  }
-
-  return op;
-}
-
-function diffBlock() {
-}
-
-
-
 

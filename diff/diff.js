@@ -318,11 +318,9 @@ function compare(left, right, assets) {
     }
 
     if (info.sounds) {
-      /* TODO
       var b = renderSounds(info.sounds, assets)
       section.appendChild(b.heading)
       section.appendChild(b.section)
-      */
     }
 
     if (info.scripts) {
@@ -331,38 +329,6 @@ function compare(left, right, assets) {
       section.appendChild(b.section);
     }
   })
-
-  /*
-  spriteNames.forEach(function(name) {
-    var s = makeSection(true, name);
-    var section = s.section;
-    result.push(s.heading);
-    result.push(s.section);
-    var different = false;
-
-    var leftObj = leftSprites[name];
-    var rightObj = rightSprites[name];
-
-    if (!leftObj) {
-      s.heading.classList.add('insert');
-    } else if (!rightObj) {
-      s.heading.classList.add('delete');
-    } 
-
-    var blocks = compareScripts(leftObj, rightObj);
-    if (blocks) {
-      var b = makeSection(false, 'Scripts');
-      //b.content.appendChild(blocks);
-      s.content.appendChild(b.heading);
-      s.content.appendChild(b.section);
-      different = true;
-    }
-
-    if (!different) {
-      s.heading.removeChild(s.triangle);
-    }
-  });
-  */
 
   return out;
 }
@@ -381,14 +347,19 @@ function renderCostumes(diff, assets) {
   })
 }
 
-/*
-function renderSounds
-      var icon = el('audio', 'play-button', '▶');
-      // TODO play sound?!
-      icon.addEventListener('click', function(event) {
-        console.log(assets[media.md5]);
-      });
-*/
+function renderSounds(diff, assets) {
+  return renderMedia({
+    title: 'Sounds',
+    kind: 'sounds',
+    diff: diff,
+    render(info) {
+      var audio = el('audio', null)
+      audio.src = assetURL(info.md5)
+      audio.controls = true
+      return audio
+    },
+  })
+}
 
 function getKeyRecursive(which) {
   return function getKey(obj) {
@@ -449,52 +420,6 @@ function renderMedia(props) {
   })
 
   return b
-}
-
-function compareMedia(kind, leftChild, rightChild, assets) {
-  function dump(child) {
-    if (!child || !child[kind]) return [];
-    return child[kind].map(function(media) {
-      return {
-        md5: media.md5 || media.baseLayerMD5,
-        name: media.costumeName || media.soundName,
-      };
-    });
-  }
-
-  var leftSeq = dump(leftChild);
-  var rightSeq = dump(rightChild);
-
-  var result = el('div', kind);
-
-  var ops = diff(leftSeq, rightSeq);
-  if (!ops.length) return;
-  if (ops.length === 1 && ops[0].type == 'equal') return;
-
-  ops.forEach(function(op) {
-    op.range.forEach(function(media) {
-      if (kind === 'costumes') {
-        var icon = el('img', null);
-        icon.src = URL.createObjectURL(assets[media.md5]);
-      } else if (kind === 'sounds') {
-        var icon = el('div', 'play-button', '▶');
-        icon.addEventListener('click', function(event) {
-          console.log(assets[media.md5]);
-        });
-      }
-      var link = el('a', null);
-      link.href = assetURL(media.md5);
-      link.appendChild(icon);
-
-      result.appendChild(el('div', op.type + ' media', null, [
-        link,
-        el('div', 'name', media.name),
-      ]));
-    });
-  });
-
-  return result;
-  //if (result.children) return result;
 }
 
 function renderScripts(diff) {

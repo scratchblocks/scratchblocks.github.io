@@ -183,25 +183,37 @@ h2, h3, .content {
 .media:last-child {
   border-bottom: 1px solid #ccc;
 }
-.media img, .media .play-button {
+.media img {
   background: #eee;
   max-width: 80px;
   max-height: 80px;
   border: 1px solid #ccc;
   float: left;
+  max-width: 80px;
+  max-height: 80px;
 }
 .media .name {
   margin-top: 8px;
   margin-left: 100px;
 }
-.play-button {
+
+.sounds .media:before {
+  display: block;
   width: 80px;
-  height: 32px;
+  height: 16px;
   text-align: center;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   content: "▶";
   padding: 8px;
+  background: none !important;
+  float: left;
+  max-width: 80px;
+  max-height: 80px;
 }
+.media audio {
+    float: right;
+}
+
 .media.insert {
  /* box-shadow: 0 0 8px #0c1; */
  background: #eaffea;

@@ -249,7 +249,7 @@ function go(event) {
     window.right = right;
 
     var result = compare(left, right, assets);
-    changes.innerHTML = '<div class="content hint">Additions highlighted <span class=insert>green</span>, removals highlighted <span class=delete>red</span>.';
+    changes.innerHTML = '<div class="content hint">removals highlighted <span class=delete>red</span>; additions highlighted <span class=insert>green</span>';
     result.forEach(function(r) {
       changes.appendChild(r);
     });

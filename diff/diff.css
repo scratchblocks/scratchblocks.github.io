@@ -252,6 +252,11 @@ h2, h3, .content {
 }
 
 
+svg {
+  display: block;
+  margin: 0 0 16px;
+}
+
 /* SVG */
 
 rect.delete {

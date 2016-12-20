@@ -505,19 +505,32 @@ let SVG = {
   },
 }
 
+function makeBlock(op, json) {
+  let lang = scratchblocks.allLanguages.en
+  let block = scratchblocks.Block.fromJSON(lang, json)
+  block.op = op
+  return block
+}
 
 function renderScripts(diff) {
   var b = makeSubSection('Scripts')
   var result = el('div', 'scripts')
   b.content.appendChild(result)
 
-  var lang = scratchblocks.allLanguages.en
-
   function expandScript(script) {
     let blocks = []
     script.forEach(item => {
       let [op, block] = item
       if (op === '~') {
+
+        // check for straight-up replace
+        if (block.__old) {
+          // TODO combine chains of ~?
+          blocks.push(makeBlock('-', block.__old))
+          blocks.push(makeBlock('+', block.__new))
+          return
+        }
+
         // the block has somehow changed
         var hasStacks = false
         var argsChanged = false
@@ -543,14 +556,9 @@ function renderScripts(diff) {
         var stacks = hasStacks ? block.slice(stackIndex) : []
 
         if (argsChanged && !stacksChanged) {
-          // TODO procDef doesnt diff right
-          var block1 = scratchblocks.Block.fromJSON(lang, getOld(args))
-          block1.op = '-'
-          blocks.push(block1)
-
-          var block2 = scratchblocks.Block.fromJSON(lang, getNew(block))
-          block2.op = hasStacks ? '+first' : '+'
-          blocks.push(block2)
+          // TODO scratch-diff: procDef doesnt diff right
+          blocks.push(makeBlock('-', getOld(args)))
+          blocks.push(makeBlock(hasStacks ? '+first' : '+', getNew(block)))
         } else if (stacksChanged) {
           // TODO
         }
@@ -558,7 +566,7 @@ function renderScripts(diff) {
 
       } else { // +, -, =
         // we have block JSON and can just construct it
-        blocks.push(scratchblocks.Block.fromJSON(lang, block))
+        blocks.push(makeBlock(op === ' ' ? null : op, block))
       }
     })
     return new scratchblocks.Script(blocks)
@@ -568,6 +576,14 @@ function renderScripts(diff) {
     let [op, script] = item
     if (op === ' ') return
 
+    // add/remove entire scripts
+    if (op === '+' || op === '-') {
+      // TODO
+      return
+    }
+
+    // script modified
+    console.log(script)
     var sb = expandScript(script)
     var doc = new scratchblocks.Document([sb])
     doc.render(svg => {
@@ -575,6 +591,7 @@ function renderScripts(diff) {
 
       annotate(doc, 0, (block, y) => {
         let op = block.op
+        if (!op) return
         let h = /first/.test(op) ? 30 : block.height // TODO fix 33
         let class_ = op[0] === '+' ? 'insert' : op[0] === '-' ? 'delete' : 'unknown'
         var below = SVG.move(0, y, SVG.rect(w, h, {

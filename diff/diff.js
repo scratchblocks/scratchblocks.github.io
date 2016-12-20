@@ -1,4 +1,8 @@
 
+function isArray(o) {
+  return typeof o === 'object' && o.constructor === Array
+}
+
 function el(tagName, className, textContent, children) {
   if (className === undefined) { className = tagName; tagName = 'div'; }
   var el = document.createElement(tagName);
@@ -289,7 +293,6 @@ function compare(left, right, assets) {
 
   diff.forEach(sprite => {
     let [op, info] = sprite
-    console.log(info)
 
     // TODO scratch-diff: Stage has no name
     // TODO scratch-diff: handle rename
@@ -340,7 +343,6 @@ function renderCostumes(diff, assets) {
     diff: diff,
     render(info) {
       var icon = el('img', null)
-      console.log(info, assets)
       icon.src = /svg/.test(info.md5) ? 'data:image/svg+xml;utf8,' + assets[info.md5] : URL.createObjectURL(assets[info.md5])
       return icon
     },
@@ -371,6 +373,20 @@ function getKeyRecursive(which) {
       return obj[which]
     }
 
+    if (isArray(obj)) {
+      if (isArray(obj[0]) && /^[ ~+-]$/.test(obj[0][0])) {
+        let out = []
+        obj.forEach(item => {
+          let [op, value] = item
+          if (op === '+' && which === '__old') return
+          if (op === '-' && which === '__new') return
+          out.push(getKey(value))
+        })
+        return out
+      }
+      return obj.map(x => getKey(x))
+    }
+
     var old = {}
     for (var key in obj) {
       old[key] = getKey(obj[key])
@@ -388,7 +404,6 @@ function renderMedia(props) {
   b.content.appendChild(result)
 
   function append(op, info) {
-    console.log(info)
     var icon = props.render(info)
 
     var link = el('a', null);
@@ -422,12 +437,159 @@ function renderMedia(props) {
   return b
 }
 
+function annotate(o, y, draw) {
+  switch (o.constructor) {
+    case scratchblocks.Block:
+      if (o.op) {
+        draw(o, y)
+      }
+      o.children.forEach(child => {
+        if (child.constructor === scratchblocks.Script) {
+          if (isNaN(child.y)) throw 'ohno'
+          annotate(child, y + child.y, draw)
+        }
+      })
+      break
+    case scratchblocks.Script:
+      // TODO highlight?
+      if (isNaN(o.y)) throw 'ohno'
+      y += o.y
+      o.blocks.forEach(block => {
+        annotate(block, y, draw)
+        y += block.height
+      })
+      break
+    case scratchblocks.Document:
+      o.scripts.forEach(script => annotate(script, 0, draw))
+      break
+  }
+}
+
+let SVG = {
+  el(name, props) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    if (name === 'svg') {
+      // explicit set namespace, see https://github.com/jindw/xmldom/issues/97
+      el.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      el.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    }
+    return SVG.setProps(el, props);
+  },
+  directProps: {
+    textContent: true,
+  },
+  setProps(el, props) {
+    for (var key in props) {
+      var value = '' + props[key];
+      if (SVG.directProps[key]) {
+        el[key] = value;
+      } else if (props[key] !== null && props.hasOwnProperty(key)) {
+        el.setAttribute(key, value);
+      }
+    }
+    return el;
+  },
+  rect(w, h, props) {
+    return SVG.el('rect', Object.assign({}, props, {
+      x: 0,
+      y: 0,
+      width: w,
+      height: h,
+    }));
+  },
+  move(dx, dy, el) {
+    SVG.setProps(el, {
+      transform: ['translate(', dx, ' ', dy, ')'].join(''),
+    });
+    return el;
+  },
+}
+
+
 function renderScripts(diff) {
   var b = makeSubSection('Scripts')
   var result = el('div', 'scripts')
   b.content.appendChild(result)
 
-  // TODO
+  var lang = scratchblocks.allLanguages.en
+
+  function expandScript(script) {
+    let blocks = []
+    script.forEach(item => {
+      let [op, block] = item
+      if (op === '~') {
+        // the block has somehow changed
+        var hasStacks = false
+        var argsChanged = false
+        var stacksChanged = false
+        var stackIndex = null
+        for (var i=0; i<block.length; i++) {
+          let [op, arg] = block[i]
+          var isStack = isArray(arg) && isArray(arg[0])
+          var changed = op !== ' '
+          if (isStack) {
+            hasStacks = true
+            if (stackIndex === null) stackIndex = i
+            if (changed) stacksChanged = true
+          } else {
+            if (changed) argsChanged = true
+          }
+        }
+
+        if (!argsChanged && !stacksChanged) throw 'oops'
+        if (stacksChanged && !hasStacks) throw 'oops'
+
+        var args = hasStacks ? block.slice(0, stackIndex) : block
+        var stacks = hasStacks ? block.slice(stackIndex) : []
+
+        if (argsChanged && !stacksChanged) {
+          // TODO procDef doesnt diff right
+          var block1 = scratchblocks.Block.fromJSON(lang, getOld(args))
+          block1.op = '-'
+          blocks.push(block1)
+
+          var block2 = scratchblocks.Block.fromJSON(lang, getNew(block))
+          block2.op = hasStacks ? '+first' : '+'
+          blocks.push(block2)
+        } else if (stacksChanged) {
+          // TODO
+        }
+        // TODO
+
+      } else { // +, -, =
+        // we have block JSON and can just construct it
+        blocks.push(scratchblocks.Block.fromJSON(lang, block))
+      }
+    })
+    return new scratchblocks.Script(blocks)
+  }
+
+  diff.forEach(item => {
+    let [op, script] = item
+    if (op === ' ') return
+
+    var sb = expandScript(script)
+    var doc = new scratchblocks.Document([sb])
+    doc.render(svg => {
+      let w = doc.width
+
+      annotate(doc, 0, (block, y) => {
+        let op = block.op
+        let h = /first/.test(op) ? 30 : block.height // TODO fix 33
+        let class_ = op[0] === '+' ? 'insert' : op[0] === '-' ? 'delete' : 'unknown'
+        var below = SVG.move(0, y, SVG.rect(w, h, {
+          class: class_ + ' below',
+        }))
+        svg.insertBefore(below, svg.children[1])
+        var above = SVG.move(0, y, SVG.rect(w, h, {
+          class: class_ + ' above',
+        }))
+        svg.appendChild(above)
+      })
+
+      b.content.appendChild(svg)
+    })
+  })
 
   return b
 }

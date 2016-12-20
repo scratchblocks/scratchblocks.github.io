@@ -251,3 +251,16 @@ h2, h3, .content {
   color: inherit;
 }
 
+
+/* SVG */
+
+rect.delete {
+  fill: #ff5a5a;
+}
+rect.insert {
+  fill: #3bff3b;
+}
+rect.above {
+  opacity: 0.3;
+}
+

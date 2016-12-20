@@ -183,7 +183,8 @@ Input.prototype.fetch = function(cb) {
         obj.costumes.forEach(function(costume) {
           var md5 = costume.baseLayerMD5;
           var url = assetURL(md5);
-          myself.get(url, 'blob', function(data) {
+          var type = /svg/.test(md5) ? 'text' : 'blob'
+          myself.get(url, type, function(data) {
             assets[md5] = data;
             var index = remaining.indexOf(md5);
             remaining.splice(index, 1);
@@ -202,7 +203,7 @@ Input.prototype.fetch = function(cb) {
 };
 
 function assetURL(md5) {
-  return "http://assets.scratch.mit.edu/internalapi/asset/" + md5 + "/get/";
+  return "http://cdn.assets.scratch.mit.edu/internalapi/asset/" + md5 + "/get/";
 }
 
 var leftInput = new Input(document.getElementById('left'));
@@ -373,7 +374,8 @@ function renderCostumes(diff, assets) {
     diff: diff,
     render(info) {
       var icon = el('img', null)
-      icon.src = URL.createObjectURL(assets[info.md5])
+      console.log(info, assets)
+      icon.src = /svg/.test(info.md5) ? 'data:image/svg+xml;utf8,' + assets[info.md5] : URL.createObjectURL(assets[info.md5])
       return icon
     },
   })
@@ -415,6 +417,7 @@ function renderMedia(props) {
   b.content.appendChild(result)
 
   function append(op, info) {
+    console.log(info)
     var icon = props.render(info)
 
     var link = el('a', null);

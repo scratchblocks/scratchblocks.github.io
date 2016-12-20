@@ -288,10 +288,11 @@ function compare(left, right, assets) {
 
   diff.forEach(sprite => {
     let [op, info] = sprite
+    console.log(info)
 
     // TODO scratch-diff: Stage has no name
     // TODO scratch-diff: handle rename
-    var s = makeSection((info && info.name) || '<no name>');
+    var s = makeSection(info.name);
     let section
     out.push(s.heading)
     out.push(section = s.section)
@@ -328,8 +329,6 @@ function compare(left, right, assets) {
       section.appendChild(b.heading);
       section.appendChild(b.section);
     }
-
-    console.log(info)
   })
 
   /*
@@ -374,7 +373,6 @@ function renderCostumes(diff, assets) {
     diff: diff,
     render(info) {
       var icon = el('img', null)
-      console.log(info)
       icon.src = URL.createObjectURL(assets[info.md5])
       return icon
     },
@@ -389,6 +387,27 @@ function renderSounds
         console.log(assets[media.md5]);
       });
 */
+
+function getKeyRecursive(which) {
+  return function getKey(obj) {
+    if (typeof obj !== 'object') {
+      return obj
+    }
+
+    if (obj[which]) {
+      return obj[which]
+    }
+
+    var old = {}
+    for (var key in obj) {
+      old[key] = getKey(obj[key])
+    }
+    return old
+  }
+}
+let getOld = getKeyRecursive('__old')
+let getNew = getKeyRecursive('__new')
+
 
 function renderMedia(props) {
   var b = makeSubSection(props.title)
@@ -414,10 +433,10 @@ function renderMedia(props) {
 
   props.diff.forEach(media => {
     let [op, info] = media
+    // TODO group ~'s
     if (op === '~') {
-      // TODO group ~'s
-      //append('delete', info.__old)
-      //append('insert', info.__new)
+      append('delete', getOld(info))
+      append('insert', getNew(info))
     } else if (op === ' ') {
       // TODO render unchanged images?
       skip()
@@ -450,7 +469,6 @@ function compareMedia(kind, leftChild, rightChild, assets) {
   if (ops.length === 1 && ops[0].type == 'equal') return;
 
   ops.forEach(function(op) {
-    console.log(op);
     op.range.forEach(function(media) {
       if (kind === 'costumes') {
         var icon = el('img', null);

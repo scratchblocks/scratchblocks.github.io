@@ -549,6 +549,8 @@ function renderScripts(diff) {
           }
         }
 
+        // TODO the whole idea of stacksChanged is flawed
+
         if (!argsChanged && !stacksChanged) throw 'oops'
         if (stacksChanged && !hasStacks) throw 'oops'
 
@@ -560,9 +562,17 @@ function renderScripts(diff) {
           blocks.push(makeBlock('-', getOld(args)))
           blocks.push(makeBlock(hasStacks ? '+first' : '+', getNew(block)))
         } else if (stacksChanged) {
-          // TODO
+          let scripts = stacks.map(item => expandScript(item[1]))
+          let block = makeBlock(null, getOld(args))
+          for (var i=0; i<block.children.length; i++) {
+            if (block.children[i].isScript) {
+              block.children[i] = scripts.shift()
+            }
+          }
+          blocks.push(block)
+        } else {
+          throw 'todo' // TODO
         }
-        // TODO
 
       } else { // +, -, =
         // we have block JSON and can just construct it

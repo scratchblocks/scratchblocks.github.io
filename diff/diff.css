@@ -1,0 +1,233 @@
+
+body {
+  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+  line-height: 1.2;
+  max-width: 46em;
+  padding: 0;
+  margin: 0 auto;
+  padding-bottom: 2em;
+}
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+}
+h1 p {
+  padding-left: 0.5em;
+  font-size: 1rem;
+  font-weight: 300;
+  display: inline-block;
+  color: #666;
+}
+
+input, button {
+  font: inherit;
+  display: inline-block;
+}
+input {
+  font-weight: 300;
+  border: 1px solid #aaa;
+  padding: 2px 4px;
+  width: 16em;
+  font-size: 1.125em;
+  margin-right: 0.5em;
+  color: #686868;
+  background: none;
+  border: none;
+  outline: none;
+  margin-left: -4px;
+}
+input:focus {
+  background: rgba(255, 255, 255, 0.5);
+  color: black;
+}
+button {
+  font-weight: 500;
+  border: 1px solid #aaa;
+  background: #f0f0f0;
+  border-bottom-width: 3px;
+  position: relative;
+  top: -2px;
+  left: -2px;
+  vertical-align: middle;
+  /*-webkit-appearance: none;
+  outline: none;*/
+}
+button:hover {
+  /*background: #f8f8f8;*/
+}
+button:focus {
+  /*box-shadow: 0 0 1px rgba(0, 0, 255, 0.5);*/
+}
+button:active, button.pressed {
+  border-bottom-width: 1px;
+  border-top-width: 2px;
+  background: #e0e0e0;
+  baseline: 2px;
+}
+
+@media (min-width: 48em) { 
+  #left {
+    display: inline-block;
+  }
+}
+
+#right { margin-bottom: 4px; }
+@media (min-width: 28em) { 
+  #right {
+    display: inline-block;
+    margin-bottom: 0;
+  }
+}
+
+#left, #right {
+  position: relative;
+}
+.progress {
+  background: #cde;
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  width: 0;
+  z-index: -1;
+  opacity: 0;
+}
+.progress.animated {
+  transition: opacity 500ms linear, width 150ms ease-out;
+}
+.progress.on {
+  opacity: 1;
+}
+
+.error .progress {
+  background: #ecc;
+  opacity: 1;
+}
+
+.content.error {
+  font-size: 1.5em;
+  font-weight: 300;
+}
+
+#header {
+  padding: 1em;
+  border-bottom: 2px solid #666;
+  margin-bottom: 1em;
+}
+
+#changes {
+}
+
+h2 {
+  font-weight: 300;
+  font-size: 1.25em;
+  border-bottom: 1px solid #ccc;
+}
+h2.insert:before,
+h2.delete:before {
+  position: absolute;
+  top: 0.25em;
+  bottom: 0.25em;
+  left: 0;
+  width: 4px;
+  content: "";
+}
+h2.insert:before {
+  background: #0c1;
+}
+h2.delete:before {
+  background: #f00;
+}
+h3 {
+  font-weight: 600;
+  font-size: 1em;
+}
+h2, h3 {
+  cursor: pointer;
+  position: relative;
+}
+h2, h3, .content {
+  padding: 0.25em 1em;
+}
+.disclosure-triangle {
+  display: inline-block;
+  font-size: 0.5em;
+  position: absolute;
+  left: 4px;
+  width: 12px;
+  text-align: center;
+  line-height: 1.2rem;
+  transition: transform 100ms linear;
+}
+.disclosure-triangle.closed {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+.closeable.closed {
+  display: none;
+}
+
+.media {
+  overflow: auto;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 2px;
+  min-height: 32px;
+}
+.media img, .media .play-button {
+  background: #eee;
+  max-width: 80px;
+  max-height: 80px;
+  border: 1px solid #ccc;
+  float: left;
+}
+.media .name {
+  margin-top: 8px;
+  margin-left: 100px;
+}
+.play-button {
+  width: 80px;
+  height: 32px;
+  text-align: center;
+  border: 1px solid #ccc;
+  content: "▶";
+  padding: 8px;
+}
+.media.insert {
+ box-shadow: 0 0 8px #0c1;
+}
+.media.delete {
+  box-shadow: 0 0 8px #f00;
+  z-index: 104;
+}
+
+.hint {
+  font-size: 0.8em;
+}
+.hint .insert {
+  color: #0c1;
+}
+.hint .delete {
+  color: #f00;
+}
+
+.footer {
+  margin-top: 1.5rem;
+  border-top: 1px solid #ccc;
+  padding-top: 0.5rem;
+  color: #ccc;
+  font-size: 0.8em;
+  font-weight: 400;
+  text-align: right;
+}
+.footer a {
+  text-decoration: none;
+  color: inherit;
+}
+

@@ -175,10 +175,13 @@ h2, h3, .content {
 
 .media {
   overflow: auto;
-  border: 1px solid #ccc;
-  border-radius: 2px;
+  border-top: 1px solid #ccc;
+  /* border-radius: 2px; */
   padding: 2px;
   min-height: 32px;
+}
+.media:last-child {
+  border-bottom: 1px solid #ccc;
 }
 .media img, .media .play-button {
   background: #eee;
@@ -200,11 +203,16 @@ h2, h3, .content {
   padding: 8px;
 }
 .media.insert {
- box-shadow: 0 0 8px #0c1;
+ /* box-shadow: 0 0 8px #0c1; */
+ background: #eaffea;
 }
 .media.delete {
-  box-shadow: 0 0 8px #f00;
+  /* box-shadow: 0 0 8px #f00; */
   z-index: 104;
+  background: #ffecec;
+}
+.media.unchanged {
+ background: #f4f7fb;
 }
 
 .hint {

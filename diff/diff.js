@@ -3,6 +3,15 @@ function isArray(o) {
   return typeof o === 'object' && o.constructor === Array
 }
 
+function isOp(s) {
+  return typeof s === 'string' && /^[ ~+-]$/.test(s)
+}
+
+function isStack(obj) {
+  return obj === null // empty stack
+      || (isArray(obj) && isArray(obj[0]))
+}
+
 function el(tagName, className, textContent, children) {
   if (className === undefined) { className = tagName; tagName = 'div'; }
   var el = document.createElement(tagName);
@@ -374,7 +383,7 @@ function getKeyRecursive(which) {
     }
 
     if (isArray(obj)) {
-      if (isArray(obj[0]) && /^[ ~+-]$/.test(obj[0][0])) {
+      if (isArray(obj[0]) && isOp(obj[0][0])) {
         let out = []
         obj.forEach(item => {
           let [op, value] = item
@@ -509,78 +518,102 @@ function makeBlock(op, json) {
   let lang = scratchblocks.allLanguages.en
   let block = scratchblocks.Block.fromJSON(lang, json)
   block.op = op
+  // TODO might need to remove stacks here.
   return block
+}
+
+function makeScript(op, json) {
+  let lang = scratchblocks.allLanguages.en
+  let script = scratchblocks.Script.fromJSON(lang, json)
+  script.op = op
+  return script
+}
+
+function scratchblocksFromDiff(diff) {
+
+  function fromBlock(block, push) {
+    // straight-up replace? selector changed?
+    if (block.__old || block[0][0] !== ' ') {
+      push(makeBlock('-', getOld(block)))
+      push(makeBlock('+', getNew(block)))
+      return
+    }
+
+    var children = block.map(item => item[1])
+    var hasStacks = children.some(isStack)
+    var stackAdjust = block.some(item => {
+      return (item[0] === '+' || item[0] === '-') && isStack(item[1])
+    })
+
+    // TODO using isStack on ops does not work!
+    var argsModified = block.some(item => {
+      return !isStack(item[1]) && item[0] !== ' '
+    })
+    var args = block.filter(item => !isStack(item[1]))
+
+    if (hasStacks) {
+      if (stackAdjust) {
+        // TODO panic
+        throw 'oh no'
+      }
+
+      var stacks = []
+      block.forEach(item => {
+        let [op, script] = item
+        if (isStack(script)) {
+          stacks.push(op === ' ' ? makeScript(null, script) : fromScript(script))
+        }
+      }) 
+
+      if (argsModified) {
+        // pop the stacks first.
+        push(makeBlock('-', getOld(args)))
+        b = makeBlock('+first', getNew(args))
+      } else {
+        b = makeBlock(null, getNew(args))
+      }
+      for (var i=0; i<b.children.length; i++) {
+        if (b.children[i].isScript) {
+          b.children[i] = stacks.shift()
+        }
+      }
+      push(b)
+
+    } else {
+      push(makeBlock('-', getOld(block)))
+      push(makeBlock('+', getNew(block)))
+    }
+  }
+
+  function fromScript(script) {
+    if (!(isArray(script) && isArray(script[0]) && isOp(script[0][0]))) throw new Error('not a script')
+    let blocks = []
+
+    if (script.__old) {
+      throw 'todo'
+      // getOld(script).forEach() {
+      // }
+    }
+
+    script.forEach(item => {
+      let [op, block] = item
+      if (op === '~') {
+        fromBlock(block, x => blocks.push(x))
+      } else {
+        blocks.push(makeBlock(op, block))
+      }
+    })
+
+    return new scratchblocks.Script(blocks)
+  }
+
+  return new scratchblocks.Document([fromScript(diff)])
 }
 
 function renderScripts(diff) {
   var b = makeSubSection('Scripts')
   var result = el('div', 'scripts')
   b.content.appendChild(result)
-
-  function expandScript(script) {
-    let blocks = []
-    script.forEach(item => {
-      let [op, block] = item
-      if (op === '~') {
-
-        // check for straight-up replace
-        if (block.__old) {
-          // TODO combine chains of ~?
-          blocks.push(makeBlock('-', block.__old))
-          blocks.push(makeBlock('+', block.__new))
-          return
-        }
-
-        // the block has somehow changed
-        var hasStacks = false
-        var argsChanged = false
-        var stacksChanged = false
-        var stackIndex = null
-        for (var i=0; i<block.length; i++) {
-          let [op, arg] = block[i]
-          var isStack = isArray(arg) && isArray(arg[0])
-          var changed = op !== ' '
-          if (isStack) {
-            hasStacks = true
-            if (stackIndex === null) stackIndex = i
-            if (changed) stacksChanged = true
-          } else {
-            if (changed) argsChanged = true
-          }
-        }
-
-        // TODO the whole idea of stacksChanged is flawed
-
-        if (!argsChanged && !stacksChanged) throw 'oops'
-        if (stacksChanged && !hasStacks) throw 'oops'
-
-        var args = hasStacks ? block.slice(0, stackIndex) : block
-        var stacks = hasStacks ? block.slice(stackIndex) : []
-
-        if (argsChanged && !stacksChanged) {
-          // TODO scratch-diff: procDef doesnt diff right
-          blocks.push(makeBlock('-', getOld(args)))
-          blocks.push(makeBlock(hasStacks ? '+first' : '+', getNew(block)))
-        } else if (stacksChanged) {
-          let scripts = stacks.map(item => expandScript(item[1]))
-          let block = makeBlock(null, getOld(args))
-          for (var i=0; i<block.children.length; i++) {
-            if (block.children[i].isScript) {
-              block.children[i] = scripts.shift()
-            }
-          }
-          blocks.push(block)
-        } else {
-          throw 'todo' // TODO
-        }
-
-      } else { // +, -, =
-        // we have block JSON and can just construct it
-        blocks.push(makeBlock(op === ' ' ? null : op, block))
-      }
-    })
-    return new scratchblocks.Script(blocks)
-  }
 
   diff.forEach(item => {
     let [op, script] = item
@@ -594,20 +627,22 @@ function renderScripts(diff) {
 
     // script modified
     console.log(script)
-    var sb = expandScript(script)
-    var doc = new scratchblocks.Document([sb])
+    var doc = scratchblocksFromDiff(script)
     doc.render(svg => {
       let w = doc.width
 
       annotate(doc, 0, (block, y) => {
         let op = block.op
-        if (!op) return
-        let h = /first/.test(op) ? 30 : block.height // TODO fix 33
+        if (!op || op === ' ') return
+
+        let h = /first/.test(op) ? 30 : block.height // TODO 30 is a hack
         let class_ = op[0] === '+' ? 'insert' : op[0] === '-' ? 'delete' : 'unknown'
+
         var below = SVG.move(0, y, SVG.rect(w, h, {
           class: class_ + ' below',
         }))
         svg.insertBefore(below, svg.children[1])
+
         var above = SVG.move(0, y, SVG.rect(w, h, {
           class: class_ + ' above',
         }))

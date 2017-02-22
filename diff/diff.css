@@ -266,6 +266,7 @@ rect.insert {
   fill: #3bff3b;
 }
 rect.above {
-  opacity: 0.3;
+  opacity: 0.5;
+  mix-blend-mode: color;
 }
 

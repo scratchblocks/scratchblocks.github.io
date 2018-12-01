@@ -26,6 +26,11 @@
 
 <div id="side">
 <div>
+  <select id="choose-style">
+    <option value="scratch2">Scratch 2.0
+    <option value="scratch3" selected>Scratch 3.0 Beta
+  </select>
+
   <select id="choose-lang">
     <option value="">Select language…
     <option value="de"> Deutsch (German)
@@ -135,7 +140,9 @@ var editor = document.getElementById('editor');
 var exportSVGLink = document.getElementById('export-svg');
 var exportPNGLink = document.getElementById('export-png');
 
-var obj = {};
+var obj = {
+  style: 'scratch3',
+};
 extractHash();
 
 var codeMirror = CodeMirror(editor, {
@@ -206,6 +213,16 @@ chooseLang.addEventListener('change', function(e) {
 });
 
 
+var chooseStyle = document.getElementById('choose-style');
+
+chooseStyle.addEventListener('change', function(e) {
+  obj.style = chooseStyle.value;
+  console.log(obj);
+  objUpdated();
+});
+
+
+
 /* Extract hash from location. Returns true if changed */
 function extractHash() {
   var newObj = decodeHash();
@@ -218,6 +235,7 @@ function extractHash() {
 
   if (newObj.lang !== obj.lang || newObj.script !== obj.script) {
     obj = newObj;
+    obj.style = obj.style || 'scratch3';
     return true;
   }
   return false;
@@ -270,10 +288,10 @@ function objUpdated() {
   // render code
   var doc = window.doc = scratchblocks.parse(obj.script, {
     languages: obj.lang ? ['en', obj.lang] : ['en'],
-      dialect: 'scratch3',
+    dialect: obj.style === 'scratch3' ? 'scratch3' : 'classic',
   });
   var docView = scratchblocks.newView(doc, {
-    style: 'scratch3',
+    style: obj.style,
   })
   var svg = docView.render()
   preview.innerHTML = "";

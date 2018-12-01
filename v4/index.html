@@ -207,8 +207,8 @@ var langStatus = document.createTextNode("");
 document.getElementById('lang-status').appendChild(langStatus);
 
 chooseLang.addEventListener('change', function(e) {
+  if (obj.lang === chooseLang.value) return
   obj.lang = chooseLang.value;
-  console.log(obj);
   objUpdated();
 });
 
@@ -216,8 +216,8 @@ chooseLang.addEventListener('change', function(e) {
 var chooseStyle = document.getElementById('choose-style');
 
 chooseStyle.addEventListener('change', function(e) {
+  if (obj.style === chooseStyle.value) return
   obj.style = chooseStyle.value;
-  console.log(obj);
   objUpdated();
 });
 
@@ -233,9 +233,10 @@ function extractHash() {
     };
   }
 
+  newObj.style = newObj.style || obj.style || 'scratch3'
+
   if (newObj.lang !== obj.lang || newObj.script !== obj.script) {
     obj = newObj;
-    obj.style = obj.style || 'scratch3';
     return true;
   }
   return false;
@@ -275,7 +276,15 @@ function setHash(hash) {
 
 function objUpdated() {
   // set hash
-  if (obj.lang) {
+  if (obj.lang || obj.style) {
+    var hash = '#?'
+    if (obj.style) hash += 'style=' + encodeURIComponent(obj.style) + '&'
+    if (obj.lang) hash += 'lang=' + encodeURIComponent(obj.lang) + '&'
+    hash += 'script='+encodeURIComponent(obj.script)
+    setHash(hash)
+  } else if (obj.style) {
+    setHash('#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(obj.script));
+  } else if (obj.lang) {
     setHash('#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(obj.script));
   } else if (obj.script) {
     setHash('#'+encodeURIComponent(obj.script));
@@ -335,6 +344,7 @@ function updatedFromHash() {
   objUpdated();
   codeMirror.setValue(obj.script);
   chooseLang.value = obj.lang || "";
+  chooseStyle.value = obj.style || "";
 }
 
 updatedFromHash();

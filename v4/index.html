@@ -258,7 +258,7 @@ function decodeHash() {
       if (!match) return;
       var key = decodeURIComponent(match[1]);
       var value = decodeURIComponent(match[2]);
-      if (key === "lang" || key === "script") {
+      if (key === "lang" || key === "script" || key === "style") {
         newObj[key] = value;
       }
     });

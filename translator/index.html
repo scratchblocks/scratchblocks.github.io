@@ -123,8 +123,8 @@
 
 <!---------------------------------------------------------------------------->
 
-<script src="/js/scratchblocks-v3.1-min.js"></script>
-<script src="/js/translations-all-v3.1-min.js" charset="utf8"></script>
+<script src="/js/scratchblocks-v3.3-min.js"></script>
+<script src="/js/translations-all-v3.3.js" charset="utf8"></script>
 <script src=/lib/codemirror-compressed.js></script>
 
 <script>
@@ -279,32 +279,44 @@ function objUpdated() {
     languages: Object.keys(scratchblocks.allLanguages),
   });
   var fromLang = mainLanguage(doc);
-  doc.render(function(svg) {
-    inPreview.innerHTML = "";
-    inPreview.appendChild(svg);
 
-    if (scratchblocks.allLanguages.hasOwnProperty(obj.lang)) {
-      doc.translate(scratchblocks.allLanguages[obj.lang]);
-      doc.render(function(svg) {
-        outPreview.innerHTML = "";
-        outPreview.appendChild(svg);
+  var docView = scratchblocks.newView(doc, {
+    style: 'scratch3',
+  })
+  var svg = docView.render()
+  svg.style.transform = 'scale(0.675)';
+  svg.style.transformOrigin = '0 0';
 
-        var translated = doc.stringify();
-        outEditor.value = translated;
+  inPreview.innerHTML = "";
+  inPreview.appendChild(svg);
 
-        // fix links
-        swapBtn.href = '#?lang=' + encodeURIComponent(fromLang) + '&script='+encodeURIComponent(translated);
-        setHomeLink(obj.lang, translated);
-      });
-    } else {
-      outPreview.innerHTML = "";
-      outEditor.value = "";
+  if (scratchblocks.allLanguages.hasOwnProperty(obj.lang)) {
+    doc.translate(scratchblocks.allLanguages[obj.lang]);
 
-      // fix links
-      swapBtn.href = location.hash;
-      setHomeLink(fromLang, obj.script);
-    }
-  });
+    var translated = doc.stringify();
+    outEditor.value = translated;
+
+    // fix links
+    swapBtn.href = '#?lang=' + encodeURIComponent(fromLang) + '&script='+encodeURIComponent(translated);
+    setHomeLink(obj.lang, translated);
+
+    var translatedView = scratchblocks.newView(doc, {
+      style: 'scratch3',
+    })
+    var svg = translatedView.render()
+    svg.style.transform = 'scale(0.675)';
+    svg.style.transformOrigin = '0 0';
+
+    outPreview.innerHTML = "";
+    outPreview.appendChild(svg);
+  } else {
+    outPreview.innerHTML = "";
+    outEditor.value = "";
+
+    // fix links
+    swapBtn.href = location.hash;
+    setHomeLink(fromLang, obj.script);
+  }
 
   // update language dropdown
   var isIncomplete = incompleteLangs.indexOf(obj.lang) > -1;

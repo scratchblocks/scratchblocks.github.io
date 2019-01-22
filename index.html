@@ -14,19 +14,24 @@
 <h1>
   <div id=title>
     <a href="/">scratchblocks</a>
-    <span class=author>v3.1 • by <a href="//tjvr.org">blob8108</a></span>
+    <span class=author><b>v3.3</b> • by <a href="//tjvr.org">blob8108</a></span>
   </div>
   <span>
     <a target="_blank" href="http://wiki.scratch.mit.edu/wiki/Block_Plugin/Syntax">help</a>
     <a href="http://github.com/tjvr/scratchblocks">github</a>
     <a href="/generator/"><b>generate</b></a>
     <a href="/translator/" id="translate-link"><b>translate</b></a>
-    <a href="/v4/"><b>scratch 3 demo</b></a>
+    <a href="/v3.1/" id="version-link"><b>old version</b></a>
   </span>
 </h1>
 
 <div id="side">
 <div>
+  <select id="choose-style">
+    <option value="scratch2">Scratch 2.0
+    <option value="scratch3" selected>Scratch 3.0 Beta
+  </select>
+
   <select id="choose-lang">
     <option value="">Select language…
     <option value="de"> Deutsch (German)
@@ -127,8 +132,8 @@
 
 <!---------------------------------------------------------------------------->
 
-<script src="/js/scratchblocks-v3.1-min.js"></script>
-<script src="/js/translations-all-v3.1-min.js" charset="utf8"></script>
+<script src="/js/scratchblocks-v3.3-min.js"></script>
+<script src="/js/translations-all-v3.3-min.js" charset="utf8"></script>
 <script src=/lib/codemirror-compressed.js></script>
 
 <script>
@@ -136,7 +141,9 @@ var editor = document.getElementById('editor');
 var exportSVGLink = document.getElementById('export-svg');
 var exportPNGLink = document.getElementById('export-png');
 
-var obj = {};
+var obj = {
+  style: 'scratch3',
+};
 extractHash();
 
 var codeMirror = CodeMirror(editor, {
@@ -201,10 +208,20 @@ var langStatus = document.createTextNode("");
 document.getElementById('lang-status').appendChild(langStatus);
 
 chooseLang.addEventListener('change', function(e) {
+  if (obj.lang === chooseLang.value) return
   obj.lang = chooseLang.value;
-  console.log(obj);
   objUpdated();
 });
+
+
+var chooseStyle = document.getElementById('choose-style');
+
+chooseStyle.addEventListener('change', function(e) {
+  if (obj.style === chooseStyle.value) return
+  obj.style = chooseStyle.value;
+  objUpdated();
+});
+
 
 
 /* Extract hash from location. Returns true if changed */
@@ -216,6 +233,8 @@ function extractHash() {
       lang: obj.lang,
     };
   }
+
+  newObj.style = newObj.style || obj.style || 'scratch3'
 
   if (newObj.lang !== obj.lang || newObj.script !== obj.script) {
     obj = newObj;
@@ -240,7 +259,7 @@ function decodeHash() {
       if (!match) return;
       var key = decodeURIComponent(match[1]);
       var value = decodeURIComponent(match[2]);
-      if (key === "lang" || key === "script") {
+      if (key === "lang" || key === "script" || key === "style") {
         newObj[key] = value;
       }
     });
@@ -250,7 +269,7 @@ function decodeHash() {
 
 function setHash(hash) {
   if (history && history.replaceState) {
-    history.replaceState({}, "", hash);
+    history.replaceState("", "", hash);
   } else {
     location.hash = hash;
   }
@@ -258,7 +277,15 @@ function setHash(hash) {
 
 function objUpdated() {
   // set hash
-  if (obj.lang) {
+  if (obj.lang || obj.style) {
+    var hash = '#?'
+    if (obj.style) hash += 'style=' + encodeURIComponent(obj.style) + '&'
+    if (obj.lang) hash += 'lang=' + encodeURIComponent(obj.lang) + '&'
+    hash += 'script='+encodeURIComponent(obj.script)
+    setHash(hash)
+  } else if (obj.style) {
+    setHash('#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(obj.script));
+  } else if (obj.lang) {
     setHash('#?lang=' + encodeURIComponent(obj.lang) + '&script='+encodeURIComponent(obj.script));
   } else if (obj.script) {
     setHash('#'+encodeURIComponent(obj.script));
@@ -271,27 +298,34 @@ function objUpdated() {
   // render code
   var doc = window.doc = scratchblocks.parse(obj.script, {
     languages: obj.lang ? ['en', obj.lang] : ['en'],
+    dialect: obj.style === 'scratch3' ? 'scratch3' : 'classic',
   });
-  doc.render(function(svg) {
-    preview.innerHTML = "";
-    preview.appendChild(svg);
+  var docView = scratchblocks.newView(doc, {
+    style: obj.style,
+  })
+  var svg = docView.render()
+  preview.innerHTML = "";
+  preview.appendChild(svg);
+  if (obj.style === 'scratch3') {
+    svg.style.transform = 'scale(0.675)';
+    svg.style.transformOrigin = '0 0';
+  }
 
-    exportSVGLink.href = "";
-    exportPNGLink.href = "";
+  exportSVGLink.href = "";
+  exportPNGLink.href = "";
 
-    // add export link
-    setTimeout(function() {
-      exportSVGLink.href = doc.exportSVG();
+  // add export link
+  setTimeout(function() {
+    exportSVGLink.href = docView.exportSVG();
 
-      doc.exportPNG(function(pngDataURL) {
-        exportPNGLink.href = pngDataURL;
-      }, 2);
-    }, 0);
+    docView.exportPNG(function(pngDataURL) {
+      exportPNGLink.href = pngDataURL;
+    }, 2);
+  }, 0);
 
-  });
-
-  // fix translate link
+  // include code in scratchblocks links
   document.getElementById('translate-link').href = "/translator/" + '#'+encodeURIComponent(obj.script);
+  document.getElementById('version-link').href = "/v3.1/" + '#'+encodeURIComponent(obj.script);
 
   // update language dropdown
   var isIncomplete = incompleteLangs.indexOf(obj.lang) > -1;
@@ -316,6 +350,7 @@ function updatedFromHash() {
   objUpdated();
   codeMirror.setValue(obj.script);
   chooseLang.value = obj.lang || "";
+  chooseStyle.value = obj.style || "";
 }
 
 updatedFromHash();

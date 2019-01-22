@@ -324,7 +324,7 @@ function objUpdated() {
 
   // include code in scratchblocks links
   document.getElementById('translate-link').href = "/translator/" + '#'+encodeURIComponent(obj.script);
-  document.getElementById('version-link').href = "/v3.1/" + '#'+encodeURIComponent(obj.script);
+  document.getElementById('version-link').href = "/v3.1/" + '#?lang=' + encodeURIComponent(obj.lang) + '&script=' + encodeURIComponent(obj.script);
 
   // update language dropdown
   var isIncomplete = incompleteLangs.indexOf(obj.lang) > -1;

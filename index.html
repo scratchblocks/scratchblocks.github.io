@@ -297,7 +297,6 @@ function objUpdated() {
   // render code
   var doc = window.doc = scratchblocks.parse(obj.script, {
     languages: obj.lang ? ['en', obj.lang] : ['en'],
-    dialect: obj.style === 'scratch3' ? 'scratch3' : 'classic',
   });
   var docView = scratchblocks.newView(doc, {
     style: obj.style,

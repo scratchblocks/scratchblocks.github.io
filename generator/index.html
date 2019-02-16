@@ -173,7 +173,7 @@ function fetch (id) {
   $("#project-url").attr("value", "http://scratch.mit.edu/projects/"+id);
   current_id = id;
 
-  var fetch_url = "//projects.scratch.mit.edu/internalapi/project/" + id + "/get/";
+  var fetch_url = "https://projects.scratch.mit.edu/" + id + "";
 
   clear_project();
 

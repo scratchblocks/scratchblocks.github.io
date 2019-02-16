@@ -169,11 +169,11 @@ function id_from_url (url) {
   return id;
 }
 
-function fetch (id) {
+function fetchProject(id) {
   $("#project-url").attr("value", "http://scratch.mit.edu/projects/"+id);
   current_id = id;
 
-  var fetch_url = "https://projects.scratch.mit.edu/" + id + "";
+  var url = "https://projects.scratch.mit.edu/" + id + "";
 
   clear_project();
 
@@ -181,16 +181,25 @@ function fetch (id) {
 
   $("#status").text("Fetching...");
 
-  $.getJSON(fetch_url, function (response) {
+  fetch(url, {
+  }).then(function(response) {
+    return response.text()
+  }).then(function(text) {
+    var isLegacy = /^ScratchV01/.test(text)
+    if (isLegacy) {
+      throw "Scratch 1.4 projects not supported"
+    }
+
+    var json = JSON.parse(text)
+    window.project = json; // DEBUG
 
     $("#status").text("Loading...");
-    load_project(response);
+    load_project(json);
     $("#status").text("Done!");
     fetching = false;
-    window.project = response; // DEBUG
     $("#project-url").blur();
-  }).error(function (e) {
-    $("#status").text("Error: "+e.statusText);
+  }).catch(function(err) {
+    $("#status").text("Error: "+err);
     fetching = false;
     check_hash();
     $("#project-url").focus();
@@ -208,9 +217,7 @@ function clear_project () {
 
 function load_project (project) {
   if (project.meta && project.meta.semver) {
-    $("#status").text("Scratch " + project.meta.semver + " projects not supported");
-    window.project = project;
-    throw new Error();
+    throw new Error("Scratch 3 projects not supported")
   }
 
   var sprites_list = [project] // stage
@@ -379,7 +386,7 @@ function init_fetch () {
   var id = id_from_url($("#project-url").attr("value"));
   if (id) {
     location.hash = "#project="+id;
-    fetch(id);
+    fetchProject(id);
   } else {
     $("#status").text("Invalid URL");
   }
@@ -402,7 +409,7 @@ function check_hash() {
   var result = /project=([0-9]+)/.exec(hash);
   if (result) {
     if (result[1] != current_id) {
-      fetch(result[1]);
+      fetchProject(result[1]);
     } else {
       // todo: clear?
     }

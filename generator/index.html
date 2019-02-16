@@ -207,6 +207,12 @@ function clear_project () {
 }
 
 function load_project (project) {
+  if (project.meta && project.meta.semver) {
+    $("#status").text("Scratch " + project.meta.semver + " projects not supported");
+    window.project = project;
+    throw new Error();
+  }
+
   var sprites_list = [project] // stage
     .concat(project.children);
 

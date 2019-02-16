@@ -146,8 +146,8 @@ http://opensource.org/licenses/MIT
 
 <!---------------------------------------------------------------------------->
 
-<script src="/js/scratchblocks-v3.1-min.js"></script>
-<script src="/js/translations-all-v3.1-min.js"></script>
+<script src="/js/scratchblocks-v3.3-min.js"></script>
+<script src="/js/translations-all-v3.3-min.js"></script>
 
 <script>
 var current_id,
@@ -319,10 +319,13 @@ function show_sprite (i) {
       document.querySelector("#scripts-list").appendChild(wrapEl);
 
       var scriptDoc = new scratchblocks.Document([script]);
-      scriptDoc.render(function(svg) {
-        wrapEl.style.height = scriptDoc.height + 'px';
-        wrapEl.appendChild(svg);
-      });
+      var docView = scratchblocks.newView(scriptDoc, {
+        style: "scratch3",
+      })
+      var svg = docView.render()
+      svg.style.zoom = 0.675
+      wrapEl.style.height = scriptDoc.height + 'px';
+      wrapEl.appendChild(svg);
 
       var id = highest_script_id;
       var checkbox = document.createElement("input")
@@ -344,6 +347,10 @@ function show_sprite (i) {
       label.for = id
       wrapEl.appendChild(label)
       wrapEl.appendChild(checkbox)
+
+      svg.addEventListener("click", function(e) {
+        checkbox.click()
+      })
 
       var key = selected_sprite + "-" + highest_script_id;
       scripts_by_id[key] = code;

@@ -146,7 +146,6 @@ http://opensource.org/licenses/MIT
 
 <!---------------------------------------------------------------------------->
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
 <script src="/js/scratchblocks-v3.1-min.js"></script>
 <script src="/js/translations-all-v3.1-min.js"></script>
 
@@ -159,6 +158,10 @@ var current_id,
   chosen_scripts,
   lang;
 
+var statusLabel = document.querySelector("#status")
+var projectInput = document.querySelector("#project-url")
+var langOption = document.querySelector("#choose-lang")
+
 function asset_url (md5) {
   return "//cdn.scratch.mit.edu/internalapi/asset/" + md5 + "/get/";
 }
@@ -170,7 +173,7 @@ function id_from_url (url) {
 }
 
 function fetchProject(id) {
-  $("#project-url").attr("value", "http://scratch.mit.edu/projects/"+id);
+  projectInput.value = "http://scratch.mit.edu/projects/"+id
   current_id = id;
 
   var url = "https://projects.scratch.mit.edu/" + id + "";
@@ -179,7 +182,7 @@ function fetchProject(id) {
 
   fetching = true;
 
-  $("#status").text("Fetching...");
+  statusLabel.textContent = "Fetching...";
 
   fetch(url, {
   }).then(function(response) {
@@ -193,26 +196,27 @@ function fetchProject(id) {
     var json = JSON.parse(text)
     window.project = json; // DEBUG
 
-    $("#status").text("Loading...");
+    statusLabel.textContent = "Loading...";
     load_project(json);
-    $("#status").text("Done!");
+    statusLabel.textContent = "Done!";
     fetching = false;
-    $("#project-url").blur();
-  }).catch(function(err) {
-    $("#status").text("Error: "+err);
+    projectInput.blur();
+  })
+    /*.catch(function(err) {
+    statusLabel.textContent = "Error: "+err;
     fetching = false;
     check_hash();
-    $("#project-url").focus();
-  });
+    projectInput.focus();
+  });*/
 }
 
 function clear_project () {
-  $("#sprites-list").empty();
-  $("#sprite-name").empty();
-  $("#costume-preview img").attr("src", "");
-  $("#scripts-list").empty();
-  $("#export").addClass("disabled");
-  $("#export").attr("href", "");
+  document.querySelector("#sprites-list").innerHTML = ""
+  document.querySelector("#sprite-name").innerHTML = ""
+  document.querySelector("#costume-preview img").src = ""
+  document.querySelector("#scripts-list").innerHTML = ""
+  document.querySelector("#export").disabled = true
+  document.querySelector("#export").href = ""
 }
 
 function load_project (project) {
@@ -223,7 +227,7 @@ function load_project (project) {
   var sprites_list = [project] // stage
     .concat(project.children);
 
-  sprites_list = $.grep(sprites_list, function (sprite, i) {
+  sprites_list = sprites_list.filter(function(sprite) {
     return sprite.hasOwnProperty("objName");
   });
 
@@ -233,19 +237,17 @@ function load_project (project) {
   chosen_scripts = [];
   chosen_scripts_updated();
 
-  $.each(sprites_list, function (i, sprite) {
-    var name = sprite.objName;
-    $("#sprites-list").append(
-      $("<li>")
-        .text(name)
-        .attr("id", "sprite-"+i)
-        .click(function () {
-          show_sprite(i);
-        })
-    );
-
+  sprites_list.forEach(function(sprite, i) {
     sprites[i] = sprite;
-  });
+
+    var el = document.createElement("li")
+    el.textContent = sprite.objName
+    el.id = "sprite-" + i
+    el.addEventListener("click", function() {
+      show_sprite(i)
+    })
+    document.querySelector("#sprites-list").appendChild(el)
+  })
 
 
   selected_sprite = 0;
@@ -256,11 +258,9 @@ function load_project (project) {
     var selected_sprite = result[1];
   }
 
-  $("#intro").addClass("hidden");
+  document.querySelector("#intro").classList.add("hidden");
 
   show_sprite(selected_sprite);
-  update_edit_link();
-
 
   check_hash();
 }
@@ -281,22 +281,25 @@ function show_sprite (i) {
   location.hash = "#project="+current_id; //+"&sprite="+i
 
   // select list item
-  $("#sprites-list .selected").removeClass("selected");
-  $("#sprite-"+i).addClass("selected");
+  var selected = document.querySelector("#sprites-list .selected")
+  if (selected) selected.classList.remove("selected");
+  document.querySelector("#sprite-"+i).classList.add("selected"); // TODO
 
   // title
-  $("#sprite-name").text(name);
+  document.querySelector("#sprite-name").textContent = name;
 
   // preview image
   var costume = sprite.costumes[sprite.currentCostumeIndex];
   if (costume && costume.baseLayerMD5) {
-    $("#costume-preview img").attr("src", asset_url(costume.baseLayerMD5));
+    document.querySelector("#costume-preview img").src = asset_url(costume.baseLayerMD5);
   }
 
   // scripts
-  $("#scripts-list").empty();
+  document.querySelector("#scripts-list").innerHTML = ""
   if (!sprite.scripts) {
-    $("#scripts-list").append("<p>No scripts.</p>")
+    var emptyState = document.createElement("p")
+    emptyState.textContent = "No scripts."
+    document.querySelector("#scripts-list").appendChild(emptyState)
   } else {
     var highest_script_id = 1;
 
@@ -311,22 +314,23 @@ function show_sprite (i) {
       var code = script.stringify();
       console.log(code);
 
-      var $script_wrap = $("<div class=script-wrap>");
-      $("#scripts-list").append($script_wrap);
+      var wrapEl = document.createElement("div")
+      wrapEl.className = "script-wrap"
+      document.querySelector("#scripts-list").appendChild(wrapEl);
 
       var scriptDoc = new scratchblocks.Document([script]);
       scriptDoc.render(function(svg) {
-        $script_wrap[0].style.height = scriptDoc.height + 'px';
-        $script_wrap.append(svg);
+        wrapEl.style.height = scriptDoc.height + 'px';
+        wrapEl.appendChild(svg);
       });
 
-      var id = "script-"+ highest_script_id;
-      var checkbox = $("<input type=checkbox id="+id+">");
-      checkbox.change(function (e) {
-        var script_id = selected_sprite + "-" +
-            $(this).attr("id").substr(7);
-
-        if ($(this).is(":checked")) {
+      var id = highest_script_id;
+      var checkbox = document.createElement("input")
+      checkbox.type = "checkbox"
+      checkbox.id = "script-"+ id
+      checkbox.addEventListener("change", function (e) {
+        var script_id = selected_sprite + "-" + id
+        if (this.checked) {
           chosen_scripts.push(script_id);
         } else {
           var index = chosen_scripts.indexOf(script_id);
@@ -336,7 +340,10 @@ function show_sprite (i) {
         }
         chosen_scripts_updated();
       });
-      $script_wrap.append($("<label for="+id+">").append(checkbox));
+      var label = document.createElement("label")
+      label.for = id
+      wrapEl.appendChild(label)
+      wrapEl.appendChild(checkbox)
 
       var key = selected_sprite + "-" + highest_script_id;
       scripts_by_id[key] = code;
@@ -354,44 +361,42 @@ function show_sprite (i) {
 }
 
 function chosen_scripts_updated () {
-  $("#num-chosen-scripts").text(chosen_scripts.length);
+  document.querySelector("#num-chosen-scripts").textContent = chosen_scripts.length;
   if (chosen_scripts.length) {
     var code = export_code();
     var url = "http://scratchblocks.github.io/#";
     if (lang && lang !== "en") url += "?lang=" + lang + "&script=";
     url += encodeURIComponent(code);
-    $("#export").attr("href", url);
-    $("#export").removeClass("disabled");
+    document.querySelector("#export").href = url
+    document.querySelector("#export").classList.remove("disabled");
   } else {
-    $("#export").attr("href", null);
-    $("#export").addClass("disabled");
+    document.querySelector("#export").href = ""
+    document.querySelector("#export").classList.add("disabled");
   }
 }
 
 function export_code () {
   out = "";
-  $.each(chosen_scripts, function (i, id) {
+  chosen_scripts.forEach(function(id) {
     out += scripts_by_id[id];
     out += "\n\n";
-  });
+  })
   return out.trim();
 }
 
 function init_fetch () {
-  $("#project-url").blur();
+  projectInput.blur();
 
 
-  lang = $("#choose-lang").attr("value") || "en";
+  lang = langOption.value || "en";
 
-  var id = id_from_url($("#project-url").attr("value"));
+  var id = id_from_url(projectInput.value);
   if (id) {
     location.hash = "#project="+id;
     fetchProject(id);
   } else {
-    $("#status").text("Invalid URL");
+    statusLabel.textContent = "Invalid URL";
   }
-
-  update_edit_link();
 }
 
 function check_hash() {
@@ -401,7 +406,7 @@ function check_hash() {
 
   var result = /url=([^&]*)/.exec(hash);
   if (result) {
-    $("#project-url").attr("value", decodeURIComponent(result[1]));
+    projectInput.value = decodeURIComponent(result[1]);
     init_fetch();
     return;
   }
@@ -425,76 +430,47 @@ function check_hash() {
   window.setTimeout(check_hash, 500);
 }
 
-var default_edit_link;
-function update_edit_link() {
-  if (!default_edit_link) {
-    default_edit_link = $("#edit-link").attr("href");
-  }
-  var url = $("#project-url").attr("value");
-  if (url) {
-    $("#edit-link").attr("href", url);
-  } else {
-    $("#edit-link").attr("href", default_edit_link);
-  }
-}
 
-$(document).ready(function () {
-  $("#fetch").click(function (e) {
-    init_fetch();
-  });
-
-  var input = document.getElementById('project-url');
-  input.addEventListener('input', function(e) {
-    console.log(input.value);
-    var id = id_from_url(input.value);
-    input.value = "http://scratch.mit.edu/projects/" + (id || '');
-    console.log(id);
-  });
-
-  $("#project-url").keypress(function (e) {
-    if (e.which == 13) {
-      init_fetch();
-    }
-
-    update_edit_link();
-  });
-
-  $("#choose-lang").change(function (e) {
-    init_fetch();
-  });
-
-
-  $(document).bind("keydown", function (e) {
-    if (e.ctrlKey) {
-      console.log(e.which);
-      switch (e.which) {
-        case 38:
-          show_sprite(selected_sprite - 1);
-          e.preventDefault();
-          return false;
-
-        case 40:
-          show_sprite(selected_sprite + 1);
-          e.preventDefault();
-          return false;
-      }
-
-    }
-  });
-
-  $("#clear").click(function (e) {
-    $("#project-url").attr("value", "");
-    update_edit_link();
-    clear_project();
-    $("#intro").removeClass("hidden");
-  });
-
-  $("#project-url").focus().val($("#project-url").val()); // set cursor to end
-
-  clear_project(); // make sure we start fresh
-
-  check_hash();
+var input = document.getElementById('project-url');
+input.addEventListener('input', function(e) {
+  console.log(input.value);
+  var id = id_from_url(input.value);
+  input.value = "http://scratch.mit.edu/projects/" + (id || '');
+  console.log(id);
 });
+
+projectInput.addEventListener("keypress", function (e) {
+  if (e.which == 13) {
+    init_fetch();
+  }
+});
+
+langOption.addEventListener("change", function (e) {
+  init_fetch();
+});
+
+
+document.addEventListener("keydown", function (e) {
+  if (e.ctrlKey) {
+    switch (e.which) {
+      case 38:
+        show_sprite(selected_sprite - 1);
+        e.preventDefault();
+        return false;
+
+      case 40:
+        show_sprite(selected_sprite + 1);
+        e.preventDefault();
+        return false;
+    }
+  }
+});
+
+projectInput.focus() //.val(projectInput.val()); // set cursor to end
+
+clear_project(); // make sure we start fresh
+
+check_hash();
 </script>
 <script>
   !function(g,s,q,r,d){r=g[r]=g[r]||function(){(r.q=r.q||[]).push(

@@ -1,5 +1,5 @@
 /**
- * scratchblocks v3.3.3
+ * scratchblocks v3.4.0
  * https://scratchblocks.github.io/
  * Render scratchblocks code to SVG images.
  *

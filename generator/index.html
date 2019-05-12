@@ -324,9 +324,15 @@ function show_sprite (i) {
         style: "scratch3",
       })
       var svg = docView.render()
-      svg.style.zoom = 0.675
-      wrapEl.style.height = scriptDoc.height + 'px';
-      wrapEl.appendChild(svg);
+      svg.style.transform = 'scale(0.675)'
+      svg.style.transformOrigin = '0 0'
+
+      var label = document.createElement("label")
+      label.for = id
+      label.style.height = ((docView.height * 0.675)|0) + 'px';
+      label.style.display = 'block'
+      label.appendChild(svg);
+      wrapEl.appendChild(label)
 
       var id = highest_script_id;
       var checkbox = document.createElement("input")
@@ -344,9 +350,6 @@ function show_sprite (i) {
         }
         chosen_scripts_updated();
       });
-      var label = document.createElement("label")
-      label.for = id
-      wrapEl.appendChild(label)
       wrapEl.appendChild(checkbox)
 
       svg.addEventListener("click", function(e) {

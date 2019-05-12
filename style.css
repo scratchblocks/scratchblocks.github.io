@@ -330,6 +330,15 @@ button:active, button.pressed, .button:active, .button.pressed {
 
 /* for generator */
 
+.script-wrap {
+  position: relative;
+  margin: 1.5em 0;
+}
+.script-wrap input {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
 /* Row */
 

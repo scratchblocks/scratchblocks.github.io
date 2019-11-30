@@ -163,6 +163,9 @@ button:active, button.pressed, .button:active, .button.pressed {
   line-height: 1em;
 }
 
+#tools{
+  max-width: 40em;
+}
 
 #editor, #in-editor, #out-editor {
   position: relative;
@@ -177,9 +180,14 @@ button:active, button.pressed, .button:active, .button.pressed {
 #out-editor {
   width: 100%;
   padding: 4px;
+  margin-top: 4px;
   overflow: auto;
 }
 
+#copy-btn{
+  float:right;
+  margin: 0px;
+}
 
 .CodeMirror, #out-editor {
   letter-spacing: +0.5px;
@@ -500,4 +508,3 @@ img .hidden {
   position: absolute;
   opacity: 0;
 }
-

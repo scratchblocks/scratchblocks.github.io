@@ -25,13 +25,14 @@
 </div>
 
 <div id="side" class=right>
-<div>
+<div id="tools">
   <select id="choose-lang">
     <option value="">Select language…
   </select>
 
   <small id=lang-status></small>
 
+  <button id="copy-btn">Copy</button>
 </div>
 
 <textarea id="out-editor" placeholder="Select a language" readonly></textarea>
@@ -51,6 +52,7 @@ var outEditor = document.getElementById('out-editor');
 
 var editor = document.getElementById('in-editor');
 var swapBtn = document.getElementById('swap-btn');
+var copyBtn = document.getElementById('copy-btn');
 
 var obj = {};
 extractHash();
@@ -285,6 +287,11 @@ function updatedFromHash() {
 
 updatedFromHash();
 
+copyBtn.onclick = function(){
+  outEditor.select();
+  document.execCommand('copy');
+};
+
 </script>
 <script>
   !function(g,s,q,r,d){r=g[r]=g[r]||function(){(r.q=r.q||[]).push(
@@ -294,4 +301,3 @@ updatedFromHash();
 
   _gs('GSN-349113-Y');
 </script>
-

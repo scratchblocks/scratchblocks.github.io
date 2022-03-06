@@ -1,4 +1,4 @@
-VERSION=v3.5.2
+VERSION=v3.6.0
 
 start:
 	http-server -c0 . -p 8001

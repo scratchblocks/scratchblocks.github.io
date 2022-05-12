@@ -222,14 +222,11 @@ function objUpdated() {
   });
   var docView = scratchblocks.newView(doc, {
     style: obj.style,
+    scale: obj.style === 'scratch3' ? 0.675 : 1,
   })
   var svg = docView.render()
   preview.innerHTML = "";
   preview.appendChild(svg);
-  if (obj.style === 'scratch3') {
-    svg.style.transform = 'scale(0.675)';
-    svg.style.transformOrigin = '0 0';
-  }
 
   exportSVGLink.href = "";
   exportPNGLink.href = "";

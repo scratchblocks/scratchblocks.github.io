@@ -14,14 +14,13 @@
 <h1>
   <div id=title>
     <a href="/">scratchblocks</a>
-    <span class=author>v3.6.1 • by <a href="//tjvr.org">blob8108</a></span>
+    <span class=author>v3.6.2 • by <a href="//tjvr.org">blob8108</a></span>
   </div>
   <span>
     <a target="_blank" href="https://en.scratch-wiki.info/wiki/Block_Plugin/Syntax">help</a>
     <a href="http://github.com/tjvr/scratchblocks">github</a>
     <a href="/translator/" id="translate-link"><b>translate</b></a>
     <a href="/generator/"><b>generate</b></a>
-    <a href="/v3.1/" id="version-link">previous</a>
   </span>
 </h1>
 
@@ -30,6 +29,7 @@
   <select id="choose-style">
     <option value="scratch2">Scratch 2.0
     <option value="scratch3" selected>Scratch 3.0
+    <option value="scratch3-high-contrast" selected>Scratch 3.0 (high-contrast)
   </select>
 
   <select id="choose-lang">
@@ -50,8 +50,8 @@
 
 <!---------------------------------------------------------------------------->
 
-<script src="/js/scratchblocks-v3.6.1-min.js"></script>
-<script src="/js/translations-all-v3.6.1.js" charset="utf8"></script>
+<script src="/js/scratchblocks-v3.6.2-min.js"></script>
+<script src="/js/translations-all-v3.6.2.js" charset="utf8"></script>
 <script src=/lib/codemirror-compressed.js></script>
 
 <script>
@@ -222,9 +222,10 @@ function objUpdated() {
   });
   var docView = scratchblocks.newView(doc, {
     style: obj.style,
-    scale: obj.style === 'scratch3' ? 0.675 : 1,
+    scale: /^scratch3($|-)/.test(obj.style) ? 0.675 : 1,
   })
   var svg = docView.render()
+  svg.classList.add("scratchblocks-style-" + obj.style)
   preview.innerHTML = "";
   preview.appendChild(svg);
 
@@ -242,7 +243,6 @@ function objUpdated() {
 
   // include code in scratchblocks links
   document.getElementById('translate-link').href = "/translator/" + '#'+encodeURIComponent(obj.script);
-  document.getElementById('version-link').href = "/v3.1/" + '#?lang=' + encodeURIComponent(obj.lang) + '&script=' + encodeURIComponent(obj.script);
 
   // update language dropdown
   var lang = scratchblocks.allLanguages[obj.lang]

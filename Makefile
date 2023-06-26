@@ -1,4 +1,4 @@
-VERSION=$(shell jq < ../scratchblocks/package.json .version -r)
+VERSION=v$(shell jq < ../scratchblocks/package.json .version -r)
 
 start:
 	http-server -c0 . -p 8001

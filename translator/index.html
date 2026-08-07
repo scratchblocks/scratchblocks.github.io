@@ -248,6 +248,15 @@ function mainLanguage(doc) {
   });
 
   function recurse(block) {
+    if (block.isGlow) {
+      if (block.child.isBlock) {
+        block = block.child
+      } else {
+        block.child.blocks.forEach(recurse);
+        return;
+      }
+    }
+
     if (block.info.language) {
       var code = block.info.language.code;
       if (!counts.hasOwnProperty(code)) counts[code] = 0;
